@@ -1,0 +1,16 @@
+<?php
+
+	namespace Stoic\Tests\Web;
+
+	use PHPUnit\Framework\TestCase;
+
+	use Stoic\Web\HeadersAlreadySentException;
+
+	class ExceptionsTest extends TestCase {
+		public function test_HeadersAlreadySent() {
+			$ex = HeadersAlreadySentException::newWithHeaders("Testing");
+			self::assertEquals("Testing", $ex->getMessage());
+
+			return;
+		}
+	}
