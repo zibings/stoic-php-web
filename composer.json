@@ -36,8 +36,7 @@
 		"psr/http-message": "~1.0",
 		"stoic/stoic": "dev-master",
 		"stoic/io": "dev-master",
-		"stoic/pdo": "dev-master",
-		"guzzlehttp/psr7": "~1.6"
+		"stoic/pdo": "dev-master"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^7",

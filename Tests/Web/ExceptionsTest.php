@@ -4,7 +4,7 @@
 
 	use PHPUnit\Framework\TestCase;
 
-	use Stoic\Web\HeadersAlreadySentException;
+	use Stoic\Web\Resources\HeadersAlreadySentException;
 
 	class ExceptionsTest extends TestCase {
 		public function test_HeadersAlreadySent() {

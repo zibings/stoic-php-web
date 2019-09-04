@@ -4,6 +4,7 @@
 
 	use Stoic\Utilities\ParameterHelper;
 	use Stoic\Utilities\StringHelper;
+	use Stoic\Web\Resources\HeadersAlreadySentException;
 
 	/**
 	 * Class to hold basic information for a web page.

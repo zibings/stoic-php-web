@@ -5,7 +5,6 @@
 	use PHPUnit\Framework\TestCase;
 
 	use Stoic\Utilities\ParameterHelper;
-	use Stoic\Web\HeadersAlreadySent;
 	use Stoic\Web\PageHelper;
 
 	class CommunicativePageHelper extends PageHelper {

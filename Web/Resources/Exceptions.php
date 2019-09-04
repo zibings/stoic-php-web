@@ -1,6 +1,6 @@
 <?php
 
-	namespace Stoic\Web;
+	namespace Stoic\Web\Resources;
 
 	/**
 	 * Exception that signifies exceptions were already sent by the currently
