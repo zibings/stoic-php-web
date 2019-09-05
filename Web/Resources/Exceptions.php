@@ -3,7 +3,7 @@
 	namespace Stoic\Web\Resources;
 
 	/**
-	 * Exception that signifies exceptions were already sent by the currently
+	 * Exception that signifies headers were already sent by the currently
 	 * executing script.
 	 *
 	 * @package Stoic\Web
@@ -34,3 +34,20 @@
 			return $tmp;
 		}
 	}
+
+	/**
+	 * Exception that signifies the current request is invalid for some reason.
+	 *
+	 * @package Stoic\Web
+	 * @version 1.0.0
+	 */
+	class InvalidRequestException extends \Exception { }
+
+	/**
+	 * Exception that signifies no JSON input is available when JSON input is
+	 * requested.
+	 *
+	 * @package Stoic\Web
+	 * @version 1.0.0
+	 */
+	class NonJsonInputException extends \Exception { }
