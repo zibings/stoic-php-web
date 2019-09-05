@@ -47,3 +47,16 @@
 		const SCRIPT_FILENAME      = 'SCRIPT_FILENAME';
 		const SCRIPT_NAME          = 'SCRIPT_NAME';
 	}
+
+	/**
+	 * Collection of index constants used for initializing an
+	 * ApiAuthorizationDispatch object.
+	 *
+	 * @package Stoic\Web
+	 * @version 1.0.0
+	 */
+	class AuthorizationDispatchStrings {
+		const INDEX_CONSUMABLE = 'consumable';
+		const INDEX_INPUT      = 'input';
+		const INDEX_ROLES      = 'roles';
+	}
