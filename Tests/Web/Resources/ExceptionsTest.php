@@ -1,6 +1,6 @@
 <?php
 
-	namespace Stoic\Tests\Web;
+	namespace Stoic\Tests\Web\Resources;
 
 	use PHPUnit\Framework\TestCase;
 
