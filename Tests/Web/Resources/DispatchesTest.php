@@ -6,7 +6,6 @@
 
 	use Stoic\Utilities\ParameterHelper;
 	use Stoic\Web\Resources\ApiAuthorizationDispatch;
-	use Stoic\Web\Resources\ApiBaseVarDispatch;
 	use Stoic\Web\Resources\AuthorizationDispatchStrings;
 
 	class DispatchesTest extends TestCase {
@@ -43,25 +42,6 @@
 
 			$disp->authorize();
 			self::assertTrue($disp->isAuthorized());
-
-			return;
-		}
-
-		public function test_BaseVarDispatch() {
-			$disp = new ApiBaseVarDispatch();
-			$disp->initialize(null);
-
-			$disp->addVar('test1', 'test1');
-			self::assertEquals('test1', $disp->getVars()->getString('test1'));
-
-			$disp->addVars(['test2' => 'test2']);
-			self::assertEquals('test2', $disp->getVars()->getString('test2'));
-
-			$stack = $disp->getVarStack();
-			self::assertEquals('test1', $stack->top()->getString('test1'));
-
-			$stack->push($stack->top()->withParameter('test3', 'test3'));
-			self::assertNull($disp->getVars()->getString('test3'));
 
 			return;
 		}
