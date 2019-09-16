@@ -47,7 +47,7 @@
 		 * @return Stoic
 		 */
 		public static function getInstance(PageVariables $variables = null, Logger $log = null) {
-			if (count(static::$instances) || ($log !== null && $variables !== null)) {
+			if (count(static::$instances) < 1 || ($log !== null && $variables !== null)) {
 				static::$instances[] = new Stoic($variables ?? PageVariables::fromGlobals(), $log ?? new Logger());
 			}
 
@@ -181,6 +181,7 @@
 		 * occurred prior to this attempt, the method will log the attempt and
 		 * silently fail.
 		 *
+		 * @codeCoverageIgnore
 		 * @param string $name String value of header name.
 		 * @param string $value String value of header value.
 		 * @param boolean $replace Optional toggle to replace vs duplicate a header, default behavior is to replace.

@@ -106,3 +106,122 @@
 			return;
 		}
 	}
+
+	/**
+	 * Struct for holding information on an uploaded file.
+	 *
+	 * @codeCoverageIgnore
+	 * @package Stoic\Web
+	 * @version 1.0.0
+	 */
+	class UploadedFile {
+		/**
+		 * The error code associated with the file upload.
+		 *
+		 * @var integer
+		 */
+		public $error;
+		/**
+		 * Original name of the file on the client machine.
+		 *
+		 * @var string
+		 */
+		public $name;
+		/**
+		 * The size, in bytes, of the uploaded file.
+		 *
+		 * @var integer
+		 */
+		public $size;
+		/**
+		 * The temporary file name of the file on the server.
+		 *
+		 * @var string
+		 */
+		public $tmpName;
+		/**
+		 * The MIME type of the file, if provided by the browser.
+		 *
+		 * @var string
+		 */
+		public $type;
+
+
+		/**
+		 * Instantiates a new UploadedFile instance using the provided information.
+		 *
+		 * @param integer $error Error code for file upload.
+		 * @param string $name Original name of the file.
+		 * @param integer $size Size of uploaded file in bytes.
+		 * @param string $tmpName Temporary file name on server.
+		 * @param string $type MIME type of file.
+		 */
+		public function __construct(int $error, string $name, int $size, string $tmpName, string $type) {
+			$this->error = $error;
+			$this->name = $name;
+			$this->size = $size;
+			$this->tmpName = $tmpName;
+			$this->type = $type;
+
+			return;
+		}
+
+		/**
+		 * Returns a string explaining the uploaded file's error code.
+		 *
+		 * @return string
+		 */
+		public function getError() : string {
+			$ret = '';
+
+			switch ($this->error) {
+				case UPLOAD_ERR_OK:
+					$ret = "Upload completed successfully.";
+
+					break;
+				case UPLOAD_ERR_INI_SIZE:
+					$ret = "Upload exceeded maximum file size on server";
+
+					break;
+				case UPLOAD_ERR_FORM_SIZE:
+					$ret = "Upload exceeded maximum file size in browser";
+
+					break;
+				case UPLOAD_ERR_PARTIAL:
+					$ret = "Upload didn't complete";
+
+					break;
+				case UPLOAD_ERR_NO_FILE:
+					$ret = "No file was uploaded";
+
+					break;
+				case UPLOAD_ERR_NO_TMP_DIR:
+					$ret = "Missing temporary folder on server";
+
+					break;
+				case UPLOAD_ERR_CANT_WRITE:
+					$ret = "Failed to write upload to disk";
+
+					break;
+				case UPLOAD_ERR_EXTENSION:
+					$ret = "A server extension stopped the upload";
+
+					break;
+				default:
+					$ret = "Unknown error code during file upload";
+
+					break;
+			}
+
+			return $ret;
+		}
+
+		/**
+		 * Determines if the file was uploaded successfully.
+		 *
+		 * @return boolean
+		 */
+		public function isValid() {
+			return $this->error == 0;
+		}
+	}
