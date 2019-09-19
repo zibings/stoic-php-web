@@ -7,8 +7,8 @@
 	use Stoic\Web\Resources\PageVariables;
 
 	/**
-	 * Singleton class in the Stoic framework.  Helps orchestrate common page-
-	 * level operations.
+	 * Singleton-ish class in the Stoic framework.  Helps orchestrate common page
+	 * -level operations.
 	 *
 	 * @package Stoic\Web
 	 * @version 1.0.0
@@ -31,7 +31,7 @@
 		/**
 		 * Static singleton instance.
 		 *
-		 * @var Stoic[]
+		 * @var array
 		 */
 		protected static $instances = [];
 
@@ -47,11 +47,17 @@
 		 * @return Stoic
 		 */
 		public static function getInstance(PageVariables $variables = null, Logger $log = null) {
-			if (count(static::$instances) < 1 || ($log !== null && $variables !== null)) {
-				static::$instances[] = new Stoic($variables ?? PageVariables::fromGlobals(), $log ?? new Logger());
+			$class = get_called_class();
+
+			if (array_key_exists($class, static::$instances) === false) {
+				static::$instances[$class] = [];
 			}
 
-			return static::$instances[count(static::$instances) - 1];
+			if (count(static::$instances[$class]) < 1 || ($log !== null && $variables !== null)) {
+				static::$instances[$class][] = new Stoic($variables ?? PageVariables::fromGlobals(), $log ?? new Logger());
+			}
+
+			return static::$instances[$class][count(static::$instances[$class]) - 1];
 		}
 
 		/**
