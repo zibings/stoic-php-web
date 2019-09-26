@@ -1,5 +1,9 @@
 <?php
 
+	// TODO: Move to Stoic\Web
+	// TODO: Change to use PageVariables in ctor
+	// TODO: Switch to method signatures from Stoic\Web\Stoic currently
+
 	namespace Stoic\Web\Api;
 
 	use Stoic\Utilities\ParameterHelper;

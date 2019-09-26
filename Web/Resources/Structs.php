@@ -3,6 +3,51 @@
 	namespace Stoic\Web\Resources;
 
 	/**
+	 * Struct for holding the information comprising an endpoint used by the API
+	 * subsystem.
+	 *
+	 * @package Stoic\Web
+	 * @version 1.0.0
+	 */
+	class ApiEndpoint {
+		/**
+		 * Value that determines required authentication 'roles'.  Can be boolean,
+		 * a string, or an array of strings.
+		 *
+		 * @var boolean|string|string[]
+		 */
+		public $authRoles = null;
+		/**
+		 * Callback to use when the endpoint is the given route.
+		 *
+		 * @var null|callable
+		 */
+		public $callback = null;
+		/**
+		 * String pattern for the URL matching.
+		 *
+		 * @var null|string
+		 */
+		public $pattern = null;
+
+
+		/**
+		 * Instantiates a new ApiEndpoint object using the given optional values.
+		 *
+		 * @param mixed $authRoles String, array of string values, or boolean representing role(s) or a basic authorized/not-authorized requirement for the request.
+		 * @param callable $callback Endpoint callback to use when the pattern matches the request.
+		 * @param string $pattern String of URL pattern for callback routing.
+		 */
+		public function __construct($authRoles = false, callable $callback = null, ?string $pattern) {
+			$this->authRoles = $authRoles;
+			$this->callback = $callback;
+			$this->pattern = $pattern;
+
+			return;
+		}
+	}
+
+	/**
 	 * Struct for holding the 'predefined' global variables for a page request.
 	 *
 	 * @codeCoverageIgnore
