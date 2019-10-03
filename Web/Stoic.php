@@ -117,6 +117,16 @@
 		}
 
 		/**
+		 * Returns the currently configured relative filesystem path for the 'core'
+		 * folder.
+		 *
+		 * @return string
+		 */
+		public function getCorePath() : string {
+			return $this->corePath;
+		}
+
+		/**
 		 * Returns the local FileHelper instance.
 		 *
 		 * @return FileHelper
