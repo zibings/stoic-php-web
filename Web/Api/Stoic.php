@@ -4,6 +4,7 @@
 
 	use Stoic\Chain\ChainHelper;
 	use Stoic\Chain\NodeBase;
+	use Stoic\Web\Request;
 	use Stoic\Web\Resources\ApiAuthorizationDispatch;
 	use Stoic\Web\Resources\ApiEndpoint;
 	use Stoic\Web\Resources\AuthorizationDispatchStrings;
@@ -51,8 +52,8 @@
 				return;
 			}
 
-			$req = new Request();
-			$get = $this->getGet();
+			$req = $this->getRequest();
+			$get = $req->getGet();
 
 			$this->setHeader('Cache-Control', 'max-age=500');
 			$this->setHeader('Content-Type', 'application/json');
