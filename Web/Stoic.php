@@ -2,9 +2,14 @@
 
 	namespace Stoic\Web;
 
+	use AndyM84\Config\ConfigContainer;
 	use Stoic\Log\Logger;
+	use Stoic\Pdo\PdoHelper;
 	use Stoic\Utilities\FileHelper;
+	use Stoic\Utilities\ParameterHelper;
 	use Stoic\Web\Resources\PageVariables;
+	use Stoic\Web\Resources\SettingsStrings;
+	use Stoic\Web\Resources\StoicStrings;
 
 	/**
 	 * Singleton-ish class in the Stoic framework.  Helps orchestrate common page
@@ -15,11 +20,23 @@
 	 */
 	class Stoic {
 		/**
+		 * Local ConfigContainer instance.
+		 *
+		 * @var ConfigContainer
+		 */
+		protected $config = null;
+		/**
 		 * Relative filesystem path for application's 'core' folder.
 		 *
 		 * @var string
 		 */
 		protected $corePath = null;
+		/**
+		 * Local PdoHelper instance.
+		 *
+		 * @var PdoHelper
+		 */
+		protected $db = null;
 		/**
 		 * Local FileHelper instance.
 		 *
@@ -38,6 +55,12 @@
 		 * @var Request
 		 */
 		protected $request = null;
+		/**
+		 * ParameterHelper instance which holds $_SESSION data.
+		 *
+		 * @var ParameterHelper
+		 */
+		protected $session = null;
 
 
 		/**
@@ -67,11 +90,7 @@
 			}
 
 			if (count(static::$instances[$class]) < 1 || ($corePath !== null && !empty($corePath) && $variables !== null && $log !== null)) {
-				$tmp = new $class($corePath, $variables ?? PageVariables::fromGlobals(), $log ?? new Logger());
-
-				// TODO: Add config loading & core loading
-
-				static::$instances[$class][] = $tmp;
+				static::$instances[$class][] = new $class($corePath, $variables ?? PageVariables::fromGlobals(), $log ?? new Logger());
 			}
 
 			return static::$instances[$class][count(static::$instances[$class]) - 1];
@@ -109,9 +128,51 @@
 		protected function __construct(string $corePath, PageVariables $variables, Logger $log, $input = null) {
 			$this->log = $log;
 			$this->corePath = $corePath;
+			$this->config = new ConfigContainer();
 			$this->request = new Request($variables ?? PageVariables::fromGlobals(), $input);
 
 			$this->setFileHelper(new FileHelper($this->corePath));
+
+			// TODO: Create script for running migrations
+			// TODO: Look into making script auto-run when composer adds the library??
+
+			if ($this->fh->fileExists(StoicStrings::SETTINGS_FILE_PATH)) {
+				$this->config = new ConfigContainer($this->fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
+			}
+
+			$incPath = $this->config->get(SettingsStrings::INCLUDE_PATH, '~/inc');
+			
+			$clsExt = $this->config->get(SettingsStrings::CLASSES_EXTENSION, '.cls.php');
+			$clsPath = $this->fh->pathJoin($incPath, $this->config->get(SettingsStrings::CLASSES_PATH,   'classes'));
+			$this->loadFilesByExtension($clsPath, $clsExt, true);
+			
+			$rpoExt = $this->config->get(SettingsStrings::REPOS_EXTENSION, '.rpo.php');
+			$rpoPath = $this->fh->pathJoin($incPath, $this->config->get(SettingsStrings::REPOS_PATH, 'repositories'));
+			$this->loadFilesByExtension($rpoPath, $rpoExt, true);
+
+			register_shutdown_function(function (Logger $log) {
+				$log->output();
+			}, $this->log);
+
+			if (!defined('STOIC_DISABLE_DATABASE')) {
+				$dsn = $this->config->get(SettingsStrings::DB_DSN, 'sqlite::memory:');
+				$user = $this->config->get(SettingsStrings::DB_USER, '');
+				$pass = $this->config->get(SettingsStrings::DB_PASS, '');
+
+				$this->setDb(new PdoHelper($dsn, $user, $pass));
+
+				if (!defined('STOIC_DISABLE_DB_EXCEPTIONS')) {
+					$this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+				}
+			}
+
+			if (!defined('STOIC_DISABLE_SESSION') && !headers_sent()) {
+				session_start();
+			}
+
+			$utlExt = $this->config->get(SettingsStrings::UTILITIES_EXT, '.utl.php');
+			$utlPath = $this->fh->pathJoin($incPath, $this->config->get(SettingsStrings::UTILITIES_PATH, 'utilities'));
+			$this->loadFilesByExtension($utlPath, $utlExt, true);
 
 			return;
 		}
@@ -124,6 +185,15 @@
 		 */
 		public function getCorePath() : string {
 			return $this->corePath;
+		}
+
+		/**
+		 * Returns the local PdoHelper instance.
+		 *
+		 * @return PdoHelper
+		 */
+		public function getDb() : PdoHelper {
+			return $this->db;
 		}
 
 		/**
@@ -142,6 +212,15 @@
 		 */
 		public function getRequest() : Request {
 			return $this->request;
+		}
+
+		/**
+		 * Returns the ParameterHelper instance of the $_SESSION data.
+		 *
+		 * @return ParameterHelper
+		 */
+		public function getSession() : ParameterHelper {
+			return $this->session;
 		}
 
 		/**
@@ -187,6 +266,18 @@
 		}
 
 		/**
+		 * Used to set the local PdoHelper instance.
+		 *
+		 * @param PdoHelper $db PdoHelper object to use internally.
+		 * @return void
+		 */
+		public function setDb(PdoHelper $db) : void {
+			$this->db = $db;
+
+			return;
+		}
+
+		/**
 		 * Used to set the local FileHelper instance.
 		 *
 		 * @param FileHelper $fh FileHelper object to use internally.
@@ -226,6 +317,18 @@
 				header("{$name}: {$value}", $replace);
 			}
 			// @codeCoverageIgnoreEnd
+
+			return;
+		}
+
+		/**
+		 * Used to set the local ParameterHelper instance with $_SESSION data.
+		 *
+		 * @param ParameterHelper $session ParameterHelper object to use internally.
+		 * @return void
+		 */
+		public function setSession(ParameterHelper $session) : void {
+			$this->session = $session;
 
 			return;
 		}

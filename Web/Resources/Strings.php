@@ -60,3 +60,32 @@
 		const INDEX_INPUT      = 'input';
 		const INDEX_ROLES      = 'roles';
 	}
+
+	/**
+	 * Collection of various strings used for Stoic operation.
+	 *
+	 * @package Stoic\Web
+	 * @version 1.0.0
+	 */
+	class StoicStrings {
+		const SETTINGS_FILE_PATH = '~/siteSettings.json';
+	}
+
+	/**
+	 * Collection of various settings strings for Stoic.
+	 *
+	 * @package Stoic\Web
+	 * @version 1.0.0
+	 */
+	class SettingsStrings {
+		const CLASSES_EXTENSION = 'classesExt';
+		const CLASSES_PATH      = 'classesPath';
+		const DB_DSN            = 'dbDsn';
+		const DB_PASS           = 'dbPass';
+		const DB_USER           = 'dbUser';
+		const INCLUDE_PATH      = 'includePath';
+		const REPOS_EXTENSION   = 'reposExt';
+		const REPOS_PATH        = 'reposPath';
+		const UTILITIES_EXT     = 'utilitiesExt';
+		const UTILITIES_PATH    = 'utilitiesPath';
+	}
