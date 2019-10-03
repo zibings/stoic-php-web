@@ -23,11 +23,11 @@
 		 */
 		protected $log = null;
 		/**
-		 * Local instance of 'predefined' global variables.
+		 * Local instance of current request information.
 		 *
-		 * @var PageVariables
+		 * @var Request
 		 */
-		protected $variables = null;
+		protected $request = null;
 
 
 		/**
@@ -68,14 +68,16 @@
 		 * @return Stoic[]
 		 */
 		public static function getInstanceStack() {
-			if (count(static::$instances) < 1) {
+			$class = get_called_class();
+
+			if (array_key_exists($class, static::$instances) === false || count(static::$instances[$class]) < 1) {
 				return [];
 			}
 
 			$ret = [];
 
-			foreach (array_values(static::$instances) as $inst) {
-				$ret[] = clone $inst;
+			foreach (array_values(static::$instances[$class]) as $inst) {
+				$ret[] = $inst;
 			}
 
 			return $ret;
@@ -88,91 +90,20 @@
 		 * @param PageVariables $variables Collection of 'predefined' variables.
 		 * @param Logger $log Logger instance for use by instance.
 		 */
-		protected function __construct(PageVariables $variables, Logger $log) {
+		protected function __construct(PageVariables $variables, Logger $log, $input = null) {
 			$this->log = $log;
-			$this->variables = $variables;
+			$this->request = new Request($variables ?? PageVariables::fromGlobals(), $input);
 
 			return;
 		}
 
 		/**
-		 * Retrieves the contents of the provided $_COOKIE collection.
+		 * Returns the Request instance for this Stoic instance.
 		 *
-		 * @return ParameterHelper
+		 * @return Request
 		 */
-		public function getCookies() : ParameterHelper {
-			return new ParameterHelper($this->variables->cookie);
-		}
-
-		/**
-		 * Retrieves the contents of the provided $_ENV collection.
-		 *
-		 * @return ParameterHelper
-		 */
-		public function getEnv() : ParameterHelper {
-			return new ParameterHelper($this->variables->env);
-		}
-
-		/**
-		 * Retrieves the contents of the provided $_FILES collection.
-		 *
-		 * @return FileUploadHelper
-		 */
-		public function getFiles() : FileUploadHelper {
-			return new FileUploadHelper($this->variables->files);
-		}
-
-		/**
-		 * Retrieves the contents of the provided $_GET collection.
-		 *
-		 * @return ParameterHelper
-		 */
-		public function getGet() : ParameterHelper {
-			return new ParameterHelper($this->variables->get);
-		}
-
-		/**
-		 * Retrieves the contents of the provided $_POST collection.
-		 *
-		 * @return ParameterHelper
-		 */
-		public function getPost() : ParameterHelper {
-			return new ParameterHelper($this->variables->post);
-		}
-
-		/**
-		 * Retrieves the contents of the provided $_REQUEST collection.
-		 *
-		 * @return ParameterHelper
-		 */
-		public function getRequest() : ParameterHelper {
-			return new ParameterHelper($this->variables->request);
-		}
-
-		/**
-		 * Retrieves the contents of the provided $_SERVER collection.
-		 * @return ParameterHelper
-		 */
-		public function getServer() : ParameterHelper {
-			return new ParameterHelper($this->variables->server);
-		}
-
-		/**
-		 * Retrieves the contents of the provided $_SESSION collection.
-		 *
-		 * @return ParameterHelper
-		 */
-		public function getSession() : ParameterHelper {
-			return new ParameterHelper($this->variables->session);
-		}
-
-		/**
-		 * Retrieves a copy of the PageVariables provided to the instance.
-		 *
-		 * @return PageVariables
-		 */
-		public function getVariables() : PageVariables {
-			return clone $this->variables;
+		public function getRequest() : Request {
+			return $this->request;
 		}
 
 		/**

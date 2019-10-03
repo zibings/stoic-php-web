@@ -1,14 +1,11 @@
 <?php
 
-	// TODO: Move to Stoic\Web
-	// TODO: Change to use PageVariables in ctor
-	// TODO: Switch to method signatures from Stoic\Web\Stoic currently
-
-	namespace Stoic\Web\Api;
+	namespace Stoic\Web;
 
 	use Stoic\Utilities\ParameterHelper;
 	use Stoic\Web\Resources\InvalidRequestException;
 	use Stoic\Web\Resources\NonJsonInputException;
+	use Stoic\Web\Resources\PageVariables;
 	use Stoic\Web\Resources\RequestType;
 	use Stoic\Web\Resources\ServerIndices;
 
@@ -21,13 +18,7 @@
 	 */
 	class Request {
 		/**
-		 * Any available cookie data for request.
-		 *
-		 * @var ParameterHelper
-		 */
-		protected $cookie = null;
-		/**
-		 * Any available input data for the request. Can be JSOn payload or from
+		 * Any available input data for the request. Can be JSON payload or from
 		 * request variables.
 		 *
 		 * @var mixed
@@ -52,11 +43,11 @@
 		 */
 		protected $requestType = null;
 		/**
-		 * Any available server data for the request.
+		 * Local instance of 'predefined' global variables.
 		 *
-		 * @var ParameterHelper
+		 * @var PageVariables
 		 */
-		protected $server = null;
+		protected $variables = null;
 
 
 		/**
@@ -70,17 +61,17 @@
 		 * @param array $cookie Optional cookie collection to use in place of $_COOKIE superglobal.
 		 * @throws InvalidRequestException
 		 */
-		public function __construct(array $server = null, $input = null, array $get = null, array $cookie = null) {
-			$this->get = new ParameterHelper($get ?? $_GET);
-			$this->cookie = new ParameterHelper($cookie ?? $_COOKIE);
-			$this->server = new ParameterHelper($server ?? $_SERVER);
+		public function __construct(PageVariables $variables = null, $input = null) {
 			$this->requestType = new RequestType(RequestType::ERROR);
+			$this->variables = $variables ?? PageVariables::fromGlobals();
 
-			if (!$this->server->has(ServerIndices::REQUEST_METHOD)) {
+			$server = $this->getServer();
+
+			if (!$server->has(ServerIndices::REQUEST_METHOD)) {
 				throw new InvalidRequestException("Server collection was missing '" . ServerIndices::REQUEST_METHOD . "' value");
 			}
 
-			$reqMeth = strtoupper($this->server->getString(ServerIndices::REQUEST_METHOD));
+			$reqMeth = strtoupper($server->getString(ServerIndices::REQUEST_METHOD));
 			$this->requestType = RequestType::fromString($reqMeth);
 
 			if ($this->requestType->getValue() === null) {
@@ -118,36 +109,39 @@
 		}
 
 		/**
-		 * Returns a ParameterHelper containing the contents of the $_COOKIE
-		 * collection.
+		 * Retrieves the contents of the provided $_COOKIE collection.
 		 *
-		 * @throws InvalidRequestException
 		 * @return ParameterHelper
 		 */
-		public function getParameterizedCookie() : ParameterHelper {
-			if (!$this->isValid) {
-				// @codeCoverageIgnoreStart
-				throw new InvalidRequestException("Can't get input on an invalid request");
-				// @codeCoverageIgnoreEnd
-			}
-
-			return $this->cookie;
+		public function getCookies() : ParameterHelper {
+			return new ParameterHelper($this->variables->cookie);
 		}
 
 		/**
-		 * Returns a ParameterHelper containing the contents of the $_GET
-		 * collection.
+		 * Retrieves the contents of the provided $_ENV collection.
 		 *
 		 * @return ParameterHelper
 		 */
-		public function getParameterizedGet() : ParameterHelper {
-			if (!$this->isValid) {
-				// @codeCoverageIgnoreStart
-				throw new InvalidRequestException("Can't get input on an invalid request");
-				// @codeCoverageIgnoreEnd
-			}
+		public function getEnv() : ParameterHelper {
+			return new ParameterHelper($this->variables->env);
+		}
 
-			return $this->get;
+		/**
+		 * Retrieves the contents of the provided $_FILES collection.
+		 *
+		 * @return FileUploadHelper
+		 */
+		public function getFiles() : FileUploadHelper {
+			return new FileUploadHelper($this->variables->files);
+		}
+
+		/**
+		 * Retrieves the contents of the provided $_GET collection.
+		 *
+		 * @return ParameterHelper
+		 */
+		public function getGet() : ParameterHelper {
+			return new ParameterHelper($this->variables->get);
 		}
 
 		/**
@@ -159,7 +153,7 @@
 		 * @throws NonJsonInputException
 		 * @return ParameterHelper
 		 */
-		public function getParameterizedInput() : ParameterHelper {
+		public function getInput() : ParameterHelper {
 			if (!$this->isValid) {
 				// @codeCoverageIgnoreStart
 				throw new InvalidRequestException("Can't get input on an invalid request");
@@ -167,7 +161,7 @@
 			}
 
 			if ($this->requestType->is(RequestType::GET)) {
-				return $this->get;
+				return $this->getGet();
 			}
 
 			if (!$this->isJson) {
@@ -177,6 +171,15 @@
 			// @codeCoverageIgnoreStart
 			return new ParameterHelper(json_decode($this->input, true));
 			// @codeCoverageIgnoreEnd
+		}
+
+		/**
+		 * Retrieves the contents of the provided $_POST collection.
+		 *
+		 * @return ParameterHelper
+		 */
+		public function getPost() : ParameterHelper {
+			return new ParameterHelper($this->variables->post);
 		}
 
 		/**
@@ -196,12 +199,47 @@
 		}
 
 		/**
+		 * Retrieves the contents of the provided $_REQUEST collection.
+		 *
+		 * @return ParameterHelper
+		 */
+		public function getRequest() : ParameterHelper {
+			return new ParameterHelper($this->variables->request);
+		}
+
+		/**
 		 * Returns a copy of the internal RequestType object.
 		 *
 		 * @return RequestType
 		 */
 		public function getRequestType() : RequestType {
 			return clone $this->requestType;
+		}
+
+		/**
+		 * Retrieves the contents of the provided $_SERVER collection.
+		 * @return ParameterHelper
+		 */
+		public function getServer() : ParameterHelper {
+			return new ParameterHelper($this->variables->server);
+		}
+
+		/**
+		 * Retrieves the contents of the provided $_SESSION collection.
+		 *
+		 * @return ParameterHelper
+		 */
+		public function getSession() : ParameterHelper {
+			return new ParameterHelper($this->variables->session);
+		}
+
+		/**
+		 * Retrieves a copy of the PageVariables provided to the instance.
+		 *
+		 * @return PageVariables
+		 */
+		public function getVariables() : PageVariables {
+			return clone $this->variables;
 		}
 
 		/**

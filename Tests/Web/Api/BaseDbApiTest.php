@@ -5,9 +5,10 @@
 	use PHPUnit\Framework\TestCase;
 
 	use Stoic\Web\Api\BaseDbApi;
-	use Stoic\Web\Api\Request;
+	use Stoic\Web\Request;
 	use Stoic\Web\Api\Response;
 	use Stoic\Web\Resources\HttpStatusCodes;
+	use Stoic\Web\Resources\PageVariables;
 	use Stoic\Web\Resources\RequestType;
 
 	class TestApiClass extends BaseDbApi {
@@ -25,8 +26,10 @@
 			$tst = new TestApiClass(new \Pseudo\Pdo());
 
 			self::assertTrue($tst->getResponse()->getStatus()->is(HttpStatusCodes::OK));
-			self::assertTrue($tst->hasVars(new Request(['REQUEST_METHOD' => 'GET'], null, ['test1' => 'val1']), ['test1']));
-			self::assertFalse($tst->hasVars(new Request(['REQUEST_METHOD' => 'GET'], null, ['test1' => 'val1']), ['test2']));
+
+			$req = new Request(new PageVariables([], [], [], ['test1' => 'val1'], [], [], ['REQUEST_METHOD' => 'GET'], []));
+			self::assertTrue($tst->hasVars($req, ['test1']));
+			self::assertFalse($tst->hasVars($req, ['test2']));
 
 			return;
 		}

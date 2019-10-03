@@ -3,6 +3,7 @@
 	namespace Stoic\Web\Api;
 
 	use Stoic\Pdo\BaseDbClass;
+	use Stoic\Web\Request;
 	use Stoic\Web\Resources\HttpStatusCodes;
 
 	/**
@@ -32,7 +33,7 @@
 		 * @return boolean
 		 */
 		protected function requestHasInputVars(Request $request, array $keysToFind) : bool {
-			$params = $request->getParameterizedInput();
+			$params = $request->getInput();
 
 			foreach (array_values($keysToFind) as $key) {
 				if (!$params->has($key)) {
