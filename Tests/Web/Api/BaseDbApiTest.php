@@ -4,6 +4,7 @@
 
 	use PHPUnit\Framework\TestCase;
 
+	use Stoic\Pdo\PdoHelper;
 	use Stoic\Web\Api\BaseDbApi;
 	use Stoic\Web\Request;
 	use Stoic\Web\Api\Response;
@@ -22,7 +23,7 @@
 
 	class BaseDbApiTest extends TestCase {
 		public function test_TestClass() {
-			$tst = new TestApiClass(new \Pseudo\Pdo());
+			$tst = new TestApiClass(new PdoHelper('sqlite::memory:'));
 
 			self::assertTrue($tst->getResponse()->getStatus()->is(HttpStatusCodes::OK));
 
