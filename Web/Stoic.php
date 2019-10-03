@@ -1,11 +1,8 @@
 <?php
 
-	// TODO: Change to have Stoic\Web\Request instance instead of individual super globals
-
 	namespace Stoic\Web;
 
 	use Stoic\Log\Logger;
-	use Stoic\Utilities\ParameterHelper;
 	use Stoic\Web\Resources\PageVariables;
 
 	/**

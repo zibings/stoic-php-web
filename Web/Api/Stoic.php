@@ -4,11 +4,13 @@
 
 	use Stoic\Chain\ChainHelper;
 	use Stoic\Chain\NodeBase;
+	use Stoic\Log\Logger;
 	use Stoic\Web\Request;
 	use Stoic\Web\Resources\ApiAuthorizationDispatch;
 	use Stoic\Web\Resources\ApiEndpoint;
 	use Stoic\Web\Resources\AuthorizationDispatchStrings;
 	use Stoic\Web\Resources\HttpStatusCodes;
+	use Stoic\Web\Resources\PageVariables;
 
 	/**
 	 * Specialized version of Stoic singleton-ish class to more strictly
@@ -36,6 +38,30 @@
 		 * @var array
 		 */
 		protected $endpoints = [];
+
+
+		/**
+		 * Static method to retrieve the most recent singleton instance for the
+		 * system.  If instance exists but the Logger and PageVariables arguments
+		 * are provided, a new instance is created and returned from the stack. If
+		 * the instance doesn't exist, one is created.
+		 *
+		 * @param PageVariables $variables Collection of 'predefined' variables, if not supplied an instance is created from globals.
+		 * @param Logger $log Logger instance for use by instance, if not supplied a new instance is used.
+		 * @return Stoic
+		 */
+		public static function getInstance(PageVariables $variables = null, Logger $log = null) {
+			$instance = parent::getInstance($variables, $log);
+
+			if ($instance->authChain === null) {
+				// @codeCoverageIgnoreStart
+				$instance->authChain = new ChainHelper(false, true);
+				$instance->authChain->hookLogger([$instance->log, 'debug']);
+				// @codeCoverageIgnoreEnd
+			}
+
+			return $instance;
+		}
 
 
 		/**
@@ -87,11 +113,6 @@
 								AuthorizationDispatchStrings::INDEX_INPUT => $req->getInput(),
 								AuthorizationDispatchStrings::INDEX_ROLES => $ep->authRoles
 							]);
-
-							if ($this->authChain === null) {
-								$this->authChain = new ChainHelper(false, true);
-								$this->authChain->hookLogger([$this->log, 'debug']);
-							}
 
 							if (!$this->authChain->traverse($disp, $this)) {
 								$this->setHttpResponseCode(HttpStatusCodes::FORBIDDEN);
@@ -174,13 +195,6 @@
 		 * @return void
 		 */
 		public function linkAuthorizationNode(NodeBase &$node) : void {
-			if ($this->authChain === null) {
-				// @codeCoverageIgnoreStart
-				$this->authChain = new ChainHelper(false, true);
-				$this->authChain->hookLogger([$this->log, 'debug']);
-				// @codeCoverageIgnoreEnd
-			}
-
 			$this->authChain->linkNode($node);
 
 			return;
