@@ -46,12 +46,13 @@
 		 * are provided, a new instance is created and returned from the stack. If
 		 * the instance doesn't exist, one is created.
 		 *
+		 * @param null|string $corePath Value of the relative filesystem path to get to the application's 'core' folder.
 		 * @param PageVariables $variables Collection of 'predefined' variables, if not supplied an instance is created from globals.
 		 * @param Logger $log Logger instance for use by instance, if not supplied a new instance is used.
 		 * @return Stoic
 		 */
-		public static function getInstance(PageVariables $variables = null, Logger $log = null) {
-			$instance = parent::getInstance($variables, $log);
+		public static function getInstance(?string $corePath = null, PageVariables $variables = null, Logger $log = null) {
+			$instance = parent::getInstance($corePath, $variables, $log);
 
 			if ($instance->authChain === null) {
 				// @codeCoverageIgnoreStart

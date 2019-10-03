@@ -47,7 +47,7 @@
 		}
 
 		protected function getStoicInstance() : Stoic {
-			$stoic = Stoic::getInstance(PageVariables::fromGlobals(), new Logger());
+			$stoic = Stoic::getInstance('./', PageVariables::fromGlobals(), new Logger());
 			$stoic->registerEndpoint(null, null, [$this, 'defTest']);
 			$stoic->registerEndpoint('GET', '/^test$/i', [$this, 'baseTest']);
 			$stoic->registerEndpoint('*', '/^authTest$/i', [$this, 'authTest'], true);
@@ -71,12 +71,12 @@
 			$_SESSION = [];
 			$_SERVER['REQUEST_METHOD'] = 'GET';
 
-			$stoic = Stoic::getInstance(PageVariables::fromGlobals(), new Logger());
+			$stoic = Stoic::getInstance('./', PageVariables::fromGlobals(), new Logger());
 			$stoic->handle('');
 			$this->performOutputTest($stoic, '"Invalid URL"');
 
 			$_GET['url'] = 'someUrl';
-			$stoic = Stoic::getInstance(PageVariables::fromGlobals(), new Logger());
+			$stoic = Stoic::getInstance('./', PageVariables::fromGlobals(), new Logger());
 			$this->performOutputTest($stoic, '"URL mis-match"');
 
 			unset($_GET['url']);
