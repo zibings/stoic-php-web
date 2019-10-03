@@ -6,6 +6,7 @@
 	 * Struct for holding the information comprising an endpoint used by the API
 	 * subsystem.
 	 *
+	 * @codeCoverageIgnore
 	 * @package Stoic\Web
 	 * @version 1.0.0
 	 */

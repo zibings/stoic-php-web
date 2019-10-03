@@ -48,7 +48,7 @@
 		 * @return void
 		 */
 		public function handle(string $urlParam = 'url') : void {
-			if ($urlParam === null || empty($urlParam)) {
+			if (empty($urlParam)) {
 				return;
 			}
 
@@ -84,9 +84,14 @@
 						if ($ep->authRoles !== null && $ep->authRoles !== false) {
 							$disp = new ApiAuthorizationDispatch();
 							$disp->initialize([
-								AuthorizationDispatchStrings::INDEX_INPUT => $req->getParameterizedInput(),
+								AuthorizationDispatchStrings::INDEX_INPUT => $req->getInput(),
 								AuthorizationDispatchStrings::INDEX_ROLES => $ep->authRoles
 							]);
+
+							if ($this->authChain === null) {
+								$this->authChain = new ChainHelper(false, true);
+								$this->authChain->hookLogger([$this->log, 'debug']);
+							}
 
 							if (!$this->authChain->traverse($disp, $this)) {
 								$this->setHttpResponseCode(HttpStatusCodes::FORBIDDEN);
@@ -146,12 +151,16 @@
 					$this->setHttpResponseCode($out->getStatus()->getValue());
 
 					if ($outData === false) {
+						// @codeCoverageIgnoreStart
 						echo(json_last_error_msg());
+						// @codeCoverageIgnoreEnd
 					} else {
 						echo($outData);
 					}
 				} else {
+					// @codeCoverageIgnoreStart
 					echo($out);
+					// @codeCoverageIgnoreEnd
 				}
 			}
 
@@ -166,8 +175,10 @@
 		 */
 		public function linkAuthorizationNode(NodeBase &$node) : void {
 			if ($this->authChain === null) {
+				// @codeCoverageIgnoreStart
 				$this->authChain = new ChainHelper(false, true);
 				$this->authChain->hookLogger([$this->log, 'debug']);
+				// @codeCoverageIgnoreEnd
 			}
 
 			$this->authChain->linkNode($node);
@@ -178,13 +189,13 @@
 		/**
 		 * Adds an endpoint callback to the internal collection.
 		 *
-		 * @param string $verbs String value of applicable request verbs for endpoint, '*' for all verbs or use pipe (|) to combine multiple verbs.
+		 * @param null|string $verbs String value of applicable request verbs for endpoint, '*' for all verbs or use pipe (|) to combine multiple verbs.
 		 * @param null|string $pattern String value of URL pattern for endpoint, `null` will set this endpoint as the 'default'.
 		 * @param callable $callback Endpoint callback for use when matched.
 		 * @param mixed $authRoles Optional string, array of string values, or boolean value representing authorization requirements for endpoint.
 		 * @return void
 		 */
-		public function registerEndpoint(string $verbs, ?string $pattern, callable $callback, $authRoles = null) : void {
+		public function registerEndpoint(?string $verbs, ?string $pattern, callable $callback, $authRoles = null) : void {
 			$ep = new ApiEndpoint($authRoles, $callback, $pattern);
 
 			if ($pattern === null) {

@@ -9,7 +9,6 @@
 	use Stoic\Web\Api\Response;
 	use Stoic\Web\Resources\HttpStatusCodes;
 	use Stoic\Web\Resources\PageVariables;
-	use Stoic\Web\Resources\RequestType;
 
 	class TestApiClass extends BaseDbApi {
 		public function getResponse() : Response {

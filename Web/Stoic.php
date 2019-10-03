@@ -56,7 +56,7 @@
 			}
 
 			if (count(static::$instances[$class]) < 1 || ($log !== null && $variables !== null)) {
-				static::$instances[$class][] = new Stoic($variables ?? PageVariables::fromGlobals(), $log ?? new Logger());
+				static::$instances[$class][] = new $class($variables ?? PageVariables::fromGlobals(), $log ?? new Logger());
 			}
 
 			return static::$instances[$class][count(static::$instances[$class]) - 1];
