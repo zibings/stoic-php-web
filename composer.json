@@ -32,18 +32,12 @@
 	],
 	"require": {
 		"php": "^7.2",
-		"psr/http-factory": "^1.0",
-		"psr/http-message": "~1.0",
 		"stoic/stoic": "dev-master",
 		"stoic/io": "dev-master",
-		"stoic/pdo": "dev-master"
+		"stoic/pdo": "dev-master",
+		"andym84/config": "^1.0"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "^7",
-		"jimbojsb/pseudo": "0.4"
-	},
-	"provide": {
-		"psr/http-factory-implementation": "1.0",
-		"psr/http-message-implementation": "1.0"
+		"phpunit/phpunit": "^7"
 	}
 }
