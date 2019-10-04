@@ -31,24 +31,42 @@
 	require(STOIC_COMPOSER_INSTALL);
 
 	use AndyM84\Config\ConfigContainer;
+	use AndyM84\Config\FieldTypes;
 	use Stoic\Utilities\FileHelper;
-	use Stoic\Web\Resources\SettingsStrings;
-	use Stoic\Web\Resources\StoicStrings;
 
+	$settings = new ConfigContainer();
 	$fh = new FileHelper(STOIC_COMPOSER_PARENT);
 
-	if (!$fh->fileExists(StoicStrings::SETTINGS_FILE_PATH)) {
-		fwrite(STDERR, "The siteSettings.json file was missing from your application, generate it manually:" . PHP_EOL . PHP_EOL . "    vendor/bin/stoic-init" . PHP_EOL);
-
-		die(1);
+	if ($fh->fileExists(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH)) {
+		$settings = new ConfigContainer($fh->getContents(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH));
 	}
 
-	$settings = new ConfigContainer($fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
+	$required = [
+		'configVersion'                                        => [FieldTypes::INTEGER, 0],
+		Stoic\Web\Resources\SettingsStrings::CLASSES_EXTENSION => [FieldTypes::STRING,  '.cls.php'],
+		Stoic\Web\Resources\SettingsStrings::CLASSES_PATH      => [FieldTypes::STRING,  'classes'],
+		Stoic\Web\Resources\SettingsStrings::DB_DSN            => [FieldTypes::STRING,  'sqlite::memory:'],
+		Stoic\Web\Resources\SettingsStrings::DB_PASS           => [FieldTypes::STRING,  ''],
+		Stoic\Web\Resources\SettingsStrings::DB_USER           => [FieldTypes::STRING,  ''],
+		Stoic\Web\Resources\SettingsStrings::INCLUDE_PATH      => [FieldTypes::STRING,  '~/inc'],
+		Stoic\Web\Resources\SettingsStrings::REPOS_EXTENSION   => [FieldTypes::STRING,  '.rpo.php'],
+		Stoic\Web\Resources\SettingsStrings::REPOS_PATH        => [FieldTypes::STRING,  'repositories'],
+		Stoic\Web\Resources\SettingsStrings::UTILITIES_EXT     => [FieldTypes::STRING,  '.utl.php'],
+		Stoic\Web\Resources\SettingsStrings::UTILITIES_PATH    => [FieldTypes::STRING,  'utilities']
+	];
 
-	$incPath = $settings->get(SettingsStrings::INCLUDE_PATH, '~/inc');
-	$clsPath = $fh->pathJoin($incPath, $settings->get(SettingsStrings::CLASSES_PATH, 'classes'));
-	$rpoPath = $fh->pathJoin($incPath, $settings->get(SettingsStrings::REPOS_PATH, 'repositories'));
-	$utlPath = $fh->pathJoin($incPath, $settings->get(SettingsStrings::UTILITIES_PATH, 'utilities'));
+	foreach ($required as $key => $data) {
+		if (!$settings->has($key)) {
+			$settings->set($key, $data[1], $data[0]);
+		}
+	}
+
+	$fh->putContents(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH, json_encode($settings, JSON_PRETTY_PRINT));
+
+	$incPath = $settings->get(Stoic\Web\Resources\SettingsStrings::INCLUDE_PATH, '~/inc');
+	$clsPath = $fh->pathJoin($incPath, $settings->get(Stoic\Web\Resources\SettingsStrings::CLASSES_PATH, 'classes'));
+	$rpoPath = $fh->pathJoin($incPath, $settings->get(Stoic\Web\Resources\SettingsStrings::REPOS_PATH, 'repositories'));
+	$utlPath = $fh->pathJoin($incPath, $settings->get(Stoic\Web\Resources\SettingsStrings::UTILITIES_PATH, 'utilities'));
 
 	$fh->makeFolder($incPath);
 	$fh->makeFolder($clsPath);

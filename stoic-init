@@ -29,6 +29,7 @@
 	}
 
 	require(STOIC_COMPOSER_INSTALL);
+	echo(STOIC_COMPOSER_INSTALL . PHP_EOL);
 
 	use AndyM84\Config\ConfigContainer;
 	use AndyM84\Config\FieldTypes;

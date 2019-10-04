@@ -4,16 +4,9 @@
 	"version": "1.0.0",
 	"homepage": "https://stoic-framework.com",
 	"autoload": {
-		"psr-0": {
-			"Stoic\\Web\\": "./Web",
-			"Stoic\\Web\\Api\\": "./Web/Api"
-		},
-		"psr-4": {
-			"Stoic\\Web\\": "./Web",
-			"Stoic\\Web\\Api\\": "./Web/Api"
-		},
+		"classmap": ["Web/"],
 		"exclude-from-classmap": [
-			"/Tests/"
+			"Tests/"
 		]
 	},
 	"repositories": [
@@ -41,18 +34,11 @@
 		"phpunit/phpunit": "^7"
 	},
 	"scripts": {
-		"post-install-cmd": [
-			"stoic-init"
-		],
-		"post-update-cmd": [
-			"stoic-init"
-		],
 		"post-create-project-cmd": [
 			"stoic-create"
 		]
 	},
 	"bin": [
-		"stoic-init",
 		"stoic-create"
 	]
 }
