@@ -41,10 +41,10 @@
 		"phpunit/phpunit": "^7"
 	},
 	"scripts": {
-		"post-package-install": [
+		"post-install-cmd": [
 			"stoic-init"
 		],
-		"post-package-update": [
+		"post-update-cmd": [
 			"stoic-init"
 		],
 		"post-create-project-cmd": [
