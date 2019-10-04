@@ -39,5 +39,20 @@
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^7"
-	}
+	},
+	"scripts": {
+		"post-package-install": [
+			"stoic-init"
+		],
+		"post-package-update": [
+			"stoic-init"
+		],
+		"post-create-project-cmd": [
+			"stoic-create"
+		]
+	},
+	"bin": [
+		"stoic-init",
+		"stoic-create"
+	]
 }

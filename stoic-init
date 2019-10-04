@@ -1,0 +1,66 @@
+#!/usr/bin/env php
+<?php
+
+	if (version_compare('7.2.0', PHP_VERSION, '>')) {
+		fwrite(STDERR, sprintf("Stoic is only supported on versions of PHP 7.2 or newer." . PHP_EOL . "You are using PHP %s (%s)" . PHP_EOL, PHP_VERSION, PHP_BINARY));
+
+		die(1);
+	}
+
+	if (!ini_get('date.timezone')) {
+		ini_set('date.timezone', 'UTC');
+	}
+
+	foreach (['../../' => '../../', '../vendor/' => '../', 'vendor/' => './'] as $file => $relPath) {
+		$path = __DIR__ . "/{$file}autoload.php";
+
+		if (file_exists($path)) {
+			define('STOIC_COMPOSER_INSTALL', $path);
+			define('STOIC_COMPOSER_PARENT', $relPath);
+
+			break;
+		}
+	}
+
+	if (!defined('STOIC_COMPOSER_INSTALL')) {
+		fwrite(STDERR, "You need to set up the project dependencies using Composer:" . PHP_EOL . PHP_EOL . "    composer install" . PHP_EOL);
+
+		die(1);
+	}
+
+	require(STOIC_COMPOSER_INSTALL);
+
+	use AndyM84\Config\ConfigContainer;
+	use AndyM84\Config\FieldTypes;
+	use Stoic\Utilities\FileHelper;
+	use Stoic\Web\Resources\SettingsStrings;
+	use Stoic\Web\Resources\StoicStrings;
+
+	$settings = new ConfigContainer();
+	$fh = new FileHelper(STOIC_COMPOSER_PARENT);
+
+	if ($fh->fileExists(StoicStrings::SETTINGS_FILE_PATH)) {
+		$settings = new ConfigContainer($fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
+	}
+
+	$required = [
+		'configVersion'                    => [FieldTypes::INTEGER, 0],
+		SettingsStrings::CLASSES_EXTENSION => [FieldTypes::STRING,  '.cls.php'],
+		SettingsStrings::CLASSES_PATH      => [FieldTypes::STRING,  'classes'],
+		SettingsStrings::DB_DSN            => [FieldTypes::STRING,  'sqlite::memory:'],
+		SettingsStrings::DB_PASS           => [FieldTypes::STRING,  ''],
+		SettingsStrings::DB_USER           => [FieldTypes::STRING,  ''],
+		SettingsStrings::INCLUDE_PATH      => [FieldTypes::STRING,  '~/inc'],
+		SettingsStrings::REPOS_EXTENSION   => [FieldTypes::STRING,  '.rpo.php'],
+		SettingsStrings::REPOS_PATH        => [FieldTypes::STRING,  'repositories'],
+		SettingsStrings::UTILITIES_EXT     => [FieldTypes::STRING,  '.utl.php'],
+		SettingsStrings::UTILITIES_PATH    => [FieldTypes::STRING,  'utilities']
+	];
+
+	foreach ($required as $key => $data) {
+		if (!$settings->has($key)) {
+			$settings->set($key, $data[1], $data[0]);
+		}
+	}
+
+	$fh->putContents(StoicStrings::SETTINGS_FILE_PATH, json_encode($settings, JSON_PRETTY_PRINT));
