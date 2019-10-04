@@ -49,10 +49,11 @@
 		 * @param null|string $corePath Value of the relative filesystem path to get to the application's 'core' folder.
 		 * @param PageVariables $variables Collection of 'predefined' variables, if not supplied an instance is created from globals.
 		 * @param Logger $log Logger instance for use by instance, if not supplied a new instance is used.
+		 * @param mixed $input Optional input data to use instead of reading from `php://input` stream.
 		 * @return Stoic
 		 */
-		public static function getInstance(?string $corePath = null, PageVariables $variables = null, Logger $log = null) {
-			$instance = parent::getInstance($corePath, $variables, $log);
+		public static function getInstance(?string $corePath = null, PageVariables $variables = null, Logger $log = null, $input = null) {
+			$instance = parent::getInstance($corePath, $variables, $log, $input);
 
 			if ($instance->authChain === null) {
 				// @codeCoverageIgnoreStart

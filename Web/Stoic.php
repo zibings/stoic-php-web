@@ -80,9 +80,10 @@
 		 * @param null|string $corePath Value of the relative filesystem path to get to the application's 'core' folder.
 		 * @param PageVariables $variables Collection of 'predefined' variables, if not supplied an instance is created from globals.
 		 * @param Logger $log Logger instance for use by instance, if not supplied a new instance is used.
+		 * @param mixed $input Optional input data to use instead of reading from `php://input` stream.
 		 * @return Stoic
 		 */
-		public static function getInstance(?string $corePath = null, PageVariables $variables = null, Logger $log = null) {
+		public static function getInstance(?string $corePath = null, PageVariables $variables = null, Logger $log = null, $input = null) {
 			$class = get_called_class();
 
 			if (array_key_exists($class, static::$instances) === false) {
@@ -90,7 +91,26 @@
 			}
 
 			if (count(static::$instances[$class]) < 1 || ($corePath !== null && !empty($corePath) && $variables !== null && $log !== null)) {
-				static::$instances[$class][] = new $class($corePath, $variables ?? PageVariables::fromGlobals(), $log ?? new Logger());
+				if (count(static::$instances[$class]) < 1) {
+					static::$instances[$class][] = new $class($corePath, $variables ?? PageVariables::fromGlobals(), $log ?? new Logger(), $input);
+				} else {
+					$existingCore = false;
+					$insts = $class::getInstanceStack();
+
+					foreach (array_values($insts) as $i) {
+						if ($i->getCorepath() == $corePath) {
+							$existingCore = true;
+
+							break;
+						}
+					}
+
+					if ($existingCore) {
+						static::$instances[$class][] = new $class($corePath, $variables ?? PageVariables::fromGlobals(), $log ?? new Logger(), $input, false);
+					} else {
+						static::$instances[$class][] = new $class($corePath, $variables ?? PageVariables::fromGlobals(), $log ?? new Logger(), $input);
+					}
+				}
 			}
 
 			return static::$instances[$class][count(static::$instances[$class]) - 1];
@@ -124,12 +144,14 @@
 		 * @param string $corePath Value of the relative filesystem path to get to the application's 'core' folder.
 		 * @param PageVariables $variables Collection of 'predefined' variables.
 		 * @param Logger $log Logger instance for use by instance.
+		 * @param mixed $input Optional input data to use instead of reading from `php://input` stream.
+		 * @param boolean $loadFiles Whether or not to attempt loading auxillary files while instantiating, defaults to true.
 		 */
-		protected function __construct(string $corePath, PageVariables $variables, Logger $log, $input = null) {
+		protected function __construct(string $corePath, PageVariables $variables, Logger $log, $input = null, bool $loadFiles = true) {
 			$this->log = $log;
 			$this->corePath = $corePath;
 			$this->config = new ConfigContainer();
-			$this->request = new Request($variables ?? PageVariables::fromGlobals(), $input);
+			$this->request = new Request($variables, $input);
 
 			$this->setFileHelper(new FileHelper($this->corePath));
 
@@ -137,21 +159,27 @@
 			// TODO: Look into making script auto-run when composer adds the library??
 
 			if ($this->fh->fileExists(StoicStrings::SETTINGS_FILE_PATH)) {
+				// @codeCoverageIgnoreStart
 				$this->config = new ConfigContainer($this->fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
+				// @codeCoverageIgnoreEnd
 			}
 
 			$incPath = $this->config->get(SettingsStrings::INCLUDE_PATH, '~/inc');
 			
-			$clsExt = $this->config->get(SettingsStrings::CLASSES_EXTENSION, '.cls.php');
-			$clsPath = $this->fh->pathJoin($incPath, $this->config->get(SettingsStrings::CLASSES_PATH,   'classes'));
-			$this->loadFilesByExtension($clsPath, $clsExt, true);
-			
-			$rpoExt = $this->config->get(SettingsStrings::REPOS_EXTENSION, '.rpo.php');
-			$rpoPath = $this->fh->pathJoin($incPath, $this->config->get(SettingsStrings::REPOS_PATH, 'repositories'));
-			$this->loadFilesByExtension($rpoPath, $rpoExt, true);
+			if ($loadFiles) {
+				$clsExt = $this->config->get(SettingsStrings::CLASSES_EXTENSION, '.cls.php');
+				$clsPath = $this->fh->pathJoin($incPath, $this->config->get(SettingsStrings::CLASSES_PATH,   'classes'));
+				$this->loadFilesByExtension($clsPath, $clsExt, true);
+				
+				$rpoExt = $this->config->get(SettingsStrings::REPOS_EXTENSION, '.rpo.php');
+				$rpoPath = $this->fh->pathJoin($incPath, $this->config->get(SettingsStrings::REPOS_PATH, 'repositories'));
+				$this->loadFilesByExtension($rpoPath, $rpoExt, true);
+			}
 
 			register_shutdown_function(function (Logger $log) {
+				// @codeCoverageIgnoreStart
 				$log->output();
+				// @codeCoverageIgnoreEnd
 			}, $this->log);
 
 			if (!defined('STOIC_DISABLE_DATABASE')) {
@@ -167,12 +195,16 @@
 			}
 
 			if (!defined('STOIC_DISABLE_SESSION') && !headers_sent()) {
+				// @codeCoverageIgnoreStart
 				session_start();
+				// @codeCoverageIgnoreEnd
 			}
 
-			$utlExt = $this->config->get(SettingsStrings::UTILITIES_EXT, '.utl.php');
-			$utlPath = $this->fh->pathJoin($incPath, $this->config->get(SettingsStrings::UTILITIES_PATH, 'utilities'));
-			$this->loadFilesByExtension($utlPath, $utlExt, true);
+			if ($loadFiles) {
+				$utlExt = $this->config->get(SettingsStrings::UTILITIES_EXT, '.utl.php');
+				$utlPath = $this->fh->pathJoin($incPath, $this->config->get(SettingsStrings::UTILITIES_PATH, 'utilities'));
+				$this->loadFilesByExtension($utlPath, $utlExt, true);
+			}
 
 			return;
 		}
@@ -227,6 +259,7 @@
 		 * Loads any files in the provided path if they have the given extension.
 		 * Returns an array of any files that were loaded.
 		 *
+		 * @codeCoverageIgnore
 		 * @param string $path Path for folder to look for files within.
 		 * @param string $extension Extension to use when searching possible files.
 		 * @param boolean $caseInsensitive Whether or not to perform a case-insensitive extension comparison, defaults to `false`.
