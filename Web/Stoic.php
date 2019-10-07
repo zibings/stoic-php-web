@@ -235,6 +235,15 @@
 		}
 
 		/**
+		 * Returns the local Logger instance.
+		 *
+		 * @return Logger
+		 */
+		public function getLog() : Logger {
+			return $this->log;
+		}
+
+		/**
 		 * Returns the Request instance for this Stoic instance.
 		 *
 		 * @return Request
@@ -284,15 +293,6 @@
 			}
 
 			return $ret;
-		}
-
-		/**
-		 * Returns the Logger instance in use by this Stoic instance.
-		 *
-		 * @return Logger
-		 */
-		public function log() : Logger {
-			return $this->log;
 		}
 
 		/**

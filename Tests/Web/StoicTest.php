@@ -39,7 +39,7 @@
 			self::assertInstanceOf(PdoHelper::class, $stoic1->getDb());
 			self::assertInstanceOf(FileHelper::class, $stoic1->getFileHelper());
 			self::assertInstanceOf(ParameterHelper::class, $stoic1->getSession());
-			self::assertInstanceOf(Logger::class, $stoic1->log());
+			self::assertInstanceOf(Logger::class, $stoic1->getLog());
 
 			return;
 		}
