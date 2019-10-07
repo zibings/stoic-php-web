@@ -155,9 +155,6 @@
 
 			$this->setFileHelper(new FileHelper($this->corePath));
 
-			// TODO: Create script for running migrations
-			// TODO: Look into making script auto-run when composer adds the library??
-
 			if ($this->fh->fileExists(StoicStrings::SETTINGS_FILE_PATH)) {
 				// @codeCoverageIgnoreStart
 				$this->config = new ConfigContainer($this->fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
