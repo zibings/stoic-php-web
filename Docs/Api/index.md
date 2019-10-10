@@ -90,3 +90,8 @@ Counter endpoint (/myApiRoot/1/counter.api.php):
 	$stoic->registerEndpoint('POST', "/^count\/down\/?$/", [$counterApi, 'countDown']);
 	$stoic->registerEndpoint('POST', "/^count\/up\/?$/",   [$counterApi, 'countUp']);
 ```
+
+## Further Reading
+* [BaseDbAPI](basedbapi.md)
+* [Response](response.md)
+* [Stoic](stoic.md)
