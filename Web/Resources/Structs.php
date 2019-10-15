@@ -114,14 +114,14 @@
 		 */
 		public static function fromGlobals() {
 			return new PageVariables(
-				$_COOKIE,
-				$_ENV,
-				$_FILES,
-				$_GET,
-				$_POST,
-				$_REQUEST,
-				$_SERVER,
-				$_SESSION
+				$_COOKIE  ?? [],
+				$_ENV     ?? [],
+				$_FILES   ?? [],
+				$_GET     ?? [],
+				$_POST    ?? [],
+				$_REQUEST ?? [],
+				$_SERVER  ?? [],
+				$_SESSION ?? []
 			);
 		}
 
