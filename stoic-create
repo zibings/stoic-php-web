@@ -12,7 +12,7 @@
 	}
 
 	foreach (['../../' => '../../', '../vendor/' => '../', 'vendor/' => './'] as $file => $relPath) {
-		$path = __DIR__ . "/{$file}autoload.php";
+		$path = "{$file}autoload.php";
 
 		if (file_exists($path)) {
 			define('STOIC_COMPOSER_INSTALL', $path);
@@ -78,7 +78,7 @@
 
 	require('vendor/autoload.php');
 
-	use Stoic\Stoic;
+	use Stoic\Web\Stoic;
 
 	$stoic = Stoic::getInstance('./');
 
@@ -87,3 +87,13 @@
 EOF;
 
 	$fh->putContents('~/index.php', $baseIndex);
+
+	$emptyIndex = <<<'EOF'
+<?php
+
+EOF;
+
+	$fh->putContents($fh->pathJoin($incPath, 'index.php'), $emptyIndex);
+	$fh->putContents($fh->pathJoin($clsPath, 'index.php'), $emptyIndex);
+	$fh->putContents($fh->pathJoin($rpoPath, 'index.php'), $emptyIndex);
+	$fh->putContents($fh->pathJoin($utlPath, 'index.php'), $emptyIndex);
