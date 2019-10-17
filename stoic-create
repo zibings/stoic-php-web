@@ -1,0 +1,99 @@
+#!/usr/bin/env php
+<?php
+
+	if (version_compare('7.2.0', PHP_VERSION, '>')) {
+		fwrite(STDERR, sprintf("Stoic is only supported on versions of PHP 7.2 or newer." . PHP_EOL . "You are using PHP %s (%s)" . PHP_EOL, PHP_VERSION, PHP_BINARY));
+
+		die(1);
+	}
+
+	if (!ini_get('date.timezone')) {
+		ini_set('date.timezone', 'UTC');
+	}
+
+	foreach (['../../' => '../../', '../vendor/' => '../', 'vendor/' => './'] as $file => $relPath) {
+		$path = "{$file}autoload.php";
+
+		if (file_exists($path)) {
+			define('STOIC_COMPOSER_INSTALL', $path);
+			define('STOIC_COMPOSER_PARENT', $relPath);
+
+			break;
+		}
+	}
+
+	if (!defined('STOIC_COMPOSER_INSTALL')) {
+		fwrite(STDERR, "You need to set up the project dependencies using Composer:" . PHP_EOL . PHP_EOL . "    composer install" . PHP_EOL);
+
+		die(1);
+	}
+
+	require(STOIC_COMPOSER_INSTALL);
+
+	use AndyM84\Config\ConfigContainer;
+	use AndyM84\Config\FieldTypes;
+	use Stoic\Utilities\FileHelper;
+
+	$settings = new ConfigContainer();
+	$fh = new FileHelper(STOIC_COMPOSER_PARENT);
+
+	if ($fh->fileExists(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH)) {
+		$settings = new ConfigContainer($fh->getContents(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH));
+	}
+
+	$required = [
+		'configVersion'                                        => [FieldTypes::INTEGER, 0],
+		Stoic\Web\Resources\SettingsStrings::CLASSES_EXTENSION => [FieldTypes::STRING,  '.cls.php'],
+		Stoic\Web\Resources\SettingsStrings::CLASSES_PATH      => [FieldTypes::STRING,  'classes'],
+		Stoic\Web\Resources\SettingsStrings::DB_DSN            => [FieldTypes::STRING,  'sqlite::memory:'],
+		Stoic\Web\Resources\SettingsStrings::DB_PASS           => [FieldTypes::STRING,  ''],
+		Stoic\Web\Resources\SettingsStrings::DB_USER           => [FieldTypes::STRING,  ''],
+		Stoic\Web\Resources\SettingsStrings::INCLUDE_PATH      => [FieldTypes::STRING,  '~/inc'],
+		Stoic\Web\Resources\SettingsStrings::REPOS_EXTENSION   => [FieldTypes::STRING,  '.rpo.php'],
+		Stoic\Web\Resources\SettingsStrings::REPOS_PATH        => [FieldTypes::STRING,  'repositories'],
+		Stoic\Web\Resources\SettingsStrings::UTILITIES_EXT     => [FieldTypes::STRING,  '.utl.php'],
+		Stoic\Web\Resources\SettingsStrings::UTILITIES_PATH    => [FieldTypes::STRING,  'utilities']
+	];
+
+	foreach ($required as $key => $data) {
+		if (!$settings->has($key)) {
+			$settings->set($key, $data[1], $data[0]);
+		}
+	}
+
+	$fh->putContents(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH, json_encode($settings, JSON_PRETTY_PRINT));
+
+	$incPath = $settings->get(Stoic\Web\Resources\SettingsStrings::INCLUDE_PATH, '~/inc');
+	$clsPath = $fh->pathJoin($incPath, $settings->get(Stoic\Web\Resources\SettingsStrings::CLASSES_PATH, 'classes'));
+	$rpoPath = $fh->pathJoin($incPath, $settings->get(Stoic\Web\Resources\SettingsStrings::REPOS_PATH, 'repositories'));
+	$utlPath = $fh->pathJoin($incPath, $settings->get(Stoic\Web\Resources\SettingsStrings::UTILITIES_PATH, 'utilities'));
+
+	$fh->makeFolder($incPath);
+	$fh->makeFolder($clsPath);
+	$fh->makeFolder($rpoPath);
+	$fh->makeFolder($utlPath);
+
+	$baseIndex = <<<'EOF'
+<?php
+
+	require('vendor/autoload.php');
+
+	use Stoic\Web\Stoic;
+
+	$stoic = Stoic::getInstance('./');
+
+	echo("Welcome to Stoic!");
+
+EOF;
+
+	$fh->putContents('~/index.php', $baseIndex);
+
+	$emptyIndex = <<<'EOF'
+<?php
+
+EOF;
+
+	$fh->putContents($fh->pathJoin($incPath, 'index.php'), $emptyIndex);
+	$fh->putContents($fh->pathJoin($clsPath, 'index.php'), $emptyIndex);
+	$fh->putContents($fh->pathJoin($rpoPath, 'index.php'), $emptyIndex);
+	$fh->putContents($fh->pathJoin($utlPath, 'index.php'), $emptyIndex);

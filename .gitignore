@@ -250,3 +250,15 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# VS Proj/Sln
+*.sln
+*.phpproj
+
+# Composer files
+composer.lock
+vendor/
+*.tmppica
+/test.php
+coverage/
+reports/
