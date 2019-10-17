@@ -58,13 +58,13 @@
 		/**
 		 * Optional string for prefix of page title.
 		 *
-		 * @var null|StringHelper
+		 * @var StringHelper
 		 */
 		protected $titlePrefix = null;
 		/**
 		 * Optional separator for page title and prefix.
 		 *
-		 * @var null|StringHelper
+		 * @var StringHelper
 		 */
 		protected $titleSeparator = null;
 		
@@ -134,7 +134,15 @@
 		 * @param string $name String identifier for page name/root-path.
 		 */
 		protected function __construct(string $name) {
+			$this->get = new ParameterHelper();
 			$this->name = new StringHelper($name);
+			$this->post = new ParameterHelper();
+			$this->request = new ParameterHelper();
+			$this->root = new StringHelper();
+			$this->title = new StringHelper();
+			$this->titlePrefix = new StringHelper();
+			$this->titleSeparator = new StringHelper();
+
 			$this->setRoot(static::getRootPath($name));
 
 			return;
