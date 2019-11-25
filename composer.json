@@ -9,25 +9,11 @@
 			"Tests/"
 		]
 	},
-	"repositories": [
-		{
-			"url": "https://github.com/zibings/stoic-php-core.git",
-			"type": "git"
-		},
-		{
-			"url": "https://github.com/zibings/stoic-php-io.git",
-			"type": "git"
-		},
-		{
-			"url": "https://github.com/zibings/stoic-php-pdo.git",
-			"type": "git"
-		}
-	],
 	"require": {
 		"php": "^7.2",
-		"stoic/stoic": "dev-master",
-		"stoic/io": "dev-master",
-		"stoic/pdo": "dev-master",
+		"stoic/stoic": "^1.0",
+		"stoic/io": "^1.0",
+		"stoic/pdo": "^1.0",
 		"andym84/config": "^1.0"
 	},
 	"require-dev": {
