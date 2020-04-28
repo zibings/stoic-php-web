@@ -6,7 +6,7 @@
 	 * Collection of index constants for the PHP $_SERVER global variable.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 */
 	class ServerIndices {
 		const AUTH_TYPE            = 'AUTH_TYPE';
@@ -53,7 +53,7 @@
 	 * ApiAuthorizationDispatch object.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 */
 	class AuthorizationDispatchStrings {
 		const INDEX_CONSUMABLE = 'consumable';
@@ -65,7 +65,7 @@
 	 * Collection of various strings used for Stoic operation.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 */
 	class StoicStrings {
 		const SETTINGS_FILE_PATH = '~/siteSettings.json';
@@ -75,15 +75,18 @@
 	 * Collection of various settings strings for Stoic.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 */
 	class SettingsStrings {
+		const ASSETS_PATH       = 'assetsPath';
 		const CLASSES_EXTENSION = 'classesExt';
 		const CLASSES_PATH      = 'classesPath';
 		const DB_DSN            = 'dbDsn';
 		const DB_PASS           = 'dbPass';
 		const DB_USER           = 'dbUser';
 		const INCLUDE_PATH      = 'includePath';
+		const MIGRATE_CFG_PATH  = 'migrateCfg';
+		const MIGRATE_DB_PATH   = 'migrateDb';
 		const REPOS_EXTENSION   = 'reposExt';
 		const REPOS_PATH        = 'reposPath';
 		const UTILITIES_EXT     = 'utilitiesExt';
