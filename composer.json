@@ -27,6 +27,7 @@
 	},
 	"bin": [
 		"stoic-create",
-		"stoic-migrate"
+		"stoic-migrate",
+		"stoic-configure"
 	]
 }
