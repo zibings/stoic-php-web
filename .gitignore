@@ -262,3 +262,8 @@ vendor/
 /test.php
 coverage/
 reports/
+/assets/
+/inc
+/tpl/
+/index.php
+/siteSettings.json
