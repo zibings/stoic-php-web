@@ -9,7 +9,7 @@
 	 * Class to supply a semi-structured response to API requests.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 */
 	class Response {
 		/**

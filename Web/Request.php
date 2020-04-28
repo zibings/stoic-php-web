@@ -14,7 +14,7 @@
 	 * the request to handler callbacks.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 */
 	class Request {
 		/**

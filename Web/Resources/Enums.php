@@ -8,7 +8,7 @@
 	 * Enumerated HTTP request verbs.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 */
 	class RequestType extends EnumBase {
 		const DELETE  = 1;
@@ -24,7 +24,7 @@
 	 * Enumerated HTTP status codes.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 */
 	class HttpStatusCodes extends EnumBase {
 		const CONTINU                          = 100;

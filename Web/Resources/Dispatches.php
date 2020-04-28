@@ -9,7 +9,7 @@
 	 * Dispatch to allow processing of request authorization.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 */
 	class ApiAuthorizationDispatch extends DispatchBase {
 		/**

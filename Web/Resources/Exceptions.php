@@ -7,7 +7,7 @@
 	 * executing script.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 */
 	class HeadersAlreadySentException extends \Exception {
 		/**
@@ -39,7 +39,7 @@
 	 * Exception that signifies the current request is invalid for some reason.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 */
 	class InvalidRequestException extends \Exception { }
 
@@ -48,6 +48,6 @@
 	 * requested.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 */
 	class NonJsonInputException extends \Exception { }
