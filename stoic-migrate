@@ -62,13 +62,6 @@
 		PdoDrivers::PDO_SQLITE => true
 	];
 
-	PdoHelper::storeQueries(PdoDrivers::PDO_MSSQL, [
-		[MStrings::FindMigTable, "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Migration'", null],
-		[MStrings::InstallMigTable, "IF NOT EXISTS (SELECT * FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = 'Migration') CREATE TABLE [Migration] ([ID] [int] IDENTITY(1,1) NOT NULL, [FileName] [nvarchar](256) NOT NULL, CONSTRAINT [PK_dbo.Migrations] PRIMARY KEY CLUSTERED ([ID] ASC) WITH (PAD_INDEX=OFF, STATISTICS_NORECOMPUTE=OFF, IGNORE_DUP_KEY=OFF, ALLOW_ROW_LOCKS=ON, ALLOW_PAGE_LOCKS=ON) ON [PRIMARY]) ON [PRIMARY]", null],
-		[MStrings::SearchMigrations, "SELECT * FROM [Migration]", null],
-		[MStrings::InsertMigration, "INSERT INTO [Migration] ([FileName]) VALUES (:fileName)", [':fileName' => \PDO::PARAM_STR]],
-		[MStrings::DropMigTable, "IF NOT EXISTS (SELECT * FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = 'Migration') DROP TABLE [Migration]", null]
-	]);
 	PdoHelper::storeQueries(PdoDrivers::PDO_MYSQL, [
 		[MStrings::FindMigTable, "SHOW TABLES LIKE 'Migration'", null],
 		[MStrings::InstallMigTable, "CREATE TABLE IF NOT EXISTS `Migration` (`ID` INT UNSIGNED NOT NULL AUTO_INCREMENT, `FileName` VARCHAR(256) NOT NULL, PRIMARY KEY (`ID`))", null],
