@@ -207,6 +207,15 @@
 		}
 
 		/**
+		 * Returns the current ConfigContainer the instance is using as its settings store.
+		 *
+		 * @return ConfigContainer
+		 */
+		public function getConfig() : ConfigContainer {
+			return $this->config;
+		}
+
+		/**
 		 * Returns the currently configured relative filesystem path for the 'core'
 		 * folder.
 		 *
