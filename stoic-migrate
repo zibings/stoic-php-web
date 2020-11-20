@@ -11,6 +11,9 @@
 		ini_set('date.timezone', 'UTC');
 	}
 
+	error_reporting(E_ALL);
+	ini_set('display_errors', 'On');
+
 	foreach (['../../' => '../../', '../vendor/' => '../', 'vendor/' => './'] as $file => $relPath) {
 		$path = "{$file}autoload.php";
 
@@ -43,7 +46,7 @@
 	// Script constants
 	define('SCRIPT_NAME',        'Stoic Framework Migration Utility');
 	define('SCRIPT_DESCRIPTION', 'Script that attempts to apply any available configuration\nand database migration files');
-	define('SCRIPT_USAGE',       '    vendor/bin/stoic-migrate -up // Migrates the configuration and runs the `up` scripts for the db (default)\n    vendor/bin/stoic-migrate -down // Migrates the configuration and runs the `down` scripts for the db');
+	define('SCRIPT_USAGE',       "    vendor/bin/stoic-migrate -up // Migrates the configuration and runs the `up` scripts for the db (default)\n    vendor/bin/stoic-migrate -down // Migrates the configuration and runs the `down` scripts for the db");
 
 	// Migration constants
 	class MStrings {
@@ -59,7 +62,8 @@
 		PdoDrivers::PDO_MSSQL => true,
 		PdoDrivers::PDO_MYSQL => true,
 		PdoDrivers::PDO_PGSQL => true,
-		PdoDrivers::PDO_SQLITE => true
+		PdoDrivers::PDO_SQLITE => true,
+		PdoDrivers::PDO_SQLSRV => true
 	];
 
 	PdoHelper::storeQueries(PdoDrivers::PDO_MSSQL, [
@@ -67,7 +71,14 @@
 		[MStrings::InstallMigTable, "IF NOT EXISTS (SELECT * FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = 'Migration') CREATE TABLE [Migration] ([ID] [int] IDENTITY(1,1) NOT NULL, [FileName] [nvarchar](256) NOT NULL, CONSTRAINT [PK_dbo.Migrations] PRIMARY KEY CLUSTERED ([ID] ASC) WITH (PAD_INDEX=OFF, STATISTICS_NORECOMPUTE=OFF, IGNORE_DUP_KEY=OFF, ALLOW_ROW_LOCKS=ON, ALLOW_PAGE_LOCKS=ON) ON [PRIMARY]) ON [PRIMARY]", null],
 		[MStrings::SearchMigrations, "SELECT * FROM [Migration]", null],
 		[MStrings::InsertMigration, "INSERT INTO [Migration] ([FileName]) VALUES (:fileName)", [':fileName' => \PDO::PARAM_STR]],
-		[MStrings::DropMigTable, "IF NOT EXISTS (SELECT * FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = 'Migration') DROP TABLE [Migration]", null]
+		[MStrings::DropMigTable, "IF EXISTS (SELECT * FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = 'Migration') DROP TABLE [Migration]", null]
+	]);
+	PdoHelper::storeQueries(PdoDrivers::PDO_SQLSRV, [
+		[MStrings::FindMigTable, "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Migration'", null],
+		[MStrings::InstallMigTable, "IF NOT EXISTS (SELECT * FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = 'Migration') CREATE TABLE [Migration] ([ID] [int] IDENTITY(1,1) NOT NULL, [FileName] [nvarchar](256) NOT NULL, CONSTRAINT [PK_dbo.Migrations] PRIMARY KEY CLUSTERED ([ID] ASC) WITH (PAD_INDEX=OFF, STATISTICS_NORECOMPUTE=OFF, IGNORE_DUP_KEY=OFF, ALLOW_ROW_LOCKS=ON, ALLOW_PAGE_LOCKS=ON) ON [PRIMARY]) ON [PRIMARY]", null],
+		[MStrings::SearchMigrations, "SELECT * FROM [Migration]", null],
+		[MStrings::InsertMigration, "INSERT INTO [Migration] ([FileName]) VALUES (:fileName)", [':fileName' => \PDO::PARAM_STR]],
+		[MStrings::DropMigTable, "IF EXISTS (SELECT * FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = 'Migration') DROP TABLE [Migration]", null]
 	]);
 	PdoHelper::storeQueries(PdoDrivers::PDO_MYSQL, [
 		[MStrings::FindMigTable, "SHOW TABLES LIKE 'Migration'", null],
@@ -132,10 +143,11 @@
 	$isDropping = false;
 	$user = $settings->get(SettingsStrings::DB_USER, null);
 	$pass = $settings->get(SettingsStrings::DB_PASS, null);
+	$dsn = $settings->get(SettingsStrings::DB_DSN);
 	$db = new PdoHelper($settings->get(SettingsStrings::DB_DSN), (empty($user) || $user == '<changeme>') ? null : $user, (empty($pass) || $pass == '<changeme>') ? null : $pass);
 
 	if (!$db->isActive() || array_key_exists($db->getDriver()->getValue(), $supportedDrivers) === false) {
-		fwrite(STDERR, "Database migration only supports MSSQL, MySQL, PgSQL, and SQLite" . PHP_EOL);
+		fwrite(STDERR, "Database migration only supports MSSQL, MySQL, PgSQL, SQLite, and SQL Server" . PHP_EOL);
 
 		die(1);
 	}
@@ -182,7 +194,7 @@
 	$ch->putLine();
 
 	if (!$isDropping) {
-		if ($db->queryStored(MStrings::FindMigTable)->rowCount() > 0) {
+		if ($db->queryStored(MStrings::FindMigTable) !== false) {
 			$query = $db->queryStored(MStrings::SearchMigrations);
 
 			while ($row = $query->fetch()) {
