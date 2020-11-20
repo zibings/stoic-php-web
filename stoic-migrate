@@ -197,8 +197,10 @@
 		if ($db->queryStored(MStrings::FindMigTable) !== false) {
 			$query = $db->queryStored(MStrings::SearchMigrations);
 
-			while ($row = $query->fetch()) {
-				$runScripts[$row['FileName']] = true;
+			if ($query !== false) {
+				while ($row = $query->fetch()) {
+					$runScripts[$row['FileName']] = true;
+				}
 			}
 		}
 	}
