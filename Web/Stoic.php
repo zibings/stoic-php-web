@@ -193,7 +193,9 @@
 
 			if (!defined('STOIC_DISABLE_SESSION') && !headers_sent()) {
 				// @codeCoverageIgnoreStart
-				session_start();
+				if (session_status() != PHP_SESSION_ACTIVE && session_status() != PHP_SESSION_DISABLED) {
+					session_start();
+				}
 				// @codeCoverageIgnoreEnd
 			}
 
