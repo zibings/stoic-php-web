@@ -39,7 +39,7 @@
 		 * @param callable $callback Endpoint callback to use when the pattern matches the request.
 		 * @param string $pattern String of URL pattern for callback routing.
 		 */
-		public function __construct($authRoles = false, callable $callback = null, ?string $pattern) {
+		public function __construct($authRoles = false, callable $callback = null, ?string $pattern = null) {
 			$this->authRoles = $authRoles;
 			$this->callback = $callback;
 			$this->pattern = $pattern;
