@@ -78,11 +78,10 @@
 				throw new InvalidRequestException("Invalid request method provided: {$reqMeth}");
 			}
 
-			if ($this->requestType->is(RequestType::GET)) {
-				$this->isValid = true;
-			} else {
+			$this->isValid = true;
+
+			if (!$this->requestType->is(RequestType::GET)) {
 				if ($input !== null) {
-					$this->isValid = true;
 					$this->input = $input;
 				} else {
 					if ($this->input === null) {
