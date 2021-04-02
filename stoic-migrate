@@ -194,7 +194,9 @@
 	$ch->putLine();
 
 	if (!$isDropping) {
-		if ($db->queryStored(MStrings::FindMigTable) !== false) {
+		$migTable = $db->queryStored(MStrings::FindMigTable);
+
+		if ($migTable !== false && $migTable->fetch() !== false) {
 			$query = $db->queryStored(MStrings::SearchMigrations);
 
 			if ($query !== false) {
@@ -227,7 +229,9 @@
 				try {
 					$db->queryStored(($isDropping) ? MStrings::DropMigTable : MStrings::InstallMigTable);
 
-					$db->prepareStored(MStrings::InsertMigration, [':fileName' => MStrings::MigFile])->execute();
+					if (!$isDropping) {
+						$db->prepareStored(MStrings::InsertMigration, [':fileName' => MStrings::MigFile])->execute();
+					}
 				} catch (\PDOException $ex) {
 					$ch->putLine("ERROR ([{$ex->getCode()}] {$ex->getMessage()})");
 
