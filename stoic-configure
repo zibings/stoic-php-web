@@ -31,6 +31,7 @@
 	require(STOIC_COMPOSER_INSTALL);
 
 	use AndyM84\Config\ConfigContainer;
+	use AndyM84\Config\Migrator;
 
 	use Stoic\Utilities\ConsoleHelper;
 	use Stoic\Utilities\FileHelper;
@@ -107,6 +108,18 @@
 
 		die(1);
 	}
+
+	$settings = new ConfigContainer($fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
+
+	$ch->putLine(SCRIPT_NAME);
+	$ch->putLine();
+	$ch->put("Performing configuration migration.. ");
+
+	$cfgHelper = new Migrator($fh->pathJoin($settings->get(SettingsStrings::ASSETS_PATH), $settings->get(SettingsStrings::MIGRATE_CFG_PATH)));
+	$cfgHelper->migrate();
+
+	$ch->putLine("DONE");
+	$ch->putLine();
 
 	$settings = new ConfigContainer($fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
 	$cfgSchema = $settings->getSchema();
