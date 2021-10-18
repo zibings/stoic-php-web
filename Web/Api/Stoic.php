@@ -80,8 +80,9 @@
 				return;
 			}
 
-			$req = $this->getRequest();
-			$get = $req->getGet();
+			$req    = $this->getRequest();
+			$server = $req->getServer();
+			$get    = $req->getGet();
 
 			$this->setHeader('Cache-Control', 'max-age=500');
 			$this->setHeader('Content-Type', 'application/json');
@@ -103,6 +104,9 @@
 			$handled = false;
 			$type = $req->getRequestType();
 			$url = $get->getString($urlParam);
+
+			$script = $server->getString(\Stoic\Web\Resources\ServerIndices::SCRIPT_NAME);
+			$url    = str_replace(substr($script, 0, strripos($script, '/') + 1), "", $url);
 
 			if (array_key_exists($type->getName(), $this->endpoints) !== false) {
 				$vendpoints = $this->endpoints[$type->getName()];
