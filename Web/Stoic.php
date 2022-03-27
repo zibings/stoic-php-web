@@ -12,55 +12,54 @@
 	use Stoic\Web\Resources\StoicStrings;
 
 	/**
-	 * Singleton-ish class in the Stoic framework.  Helps orchestrate common page
-	 * -level operations.
+	 * Singleton-ish class in the Stoic framework.  Helps orchestrate common page-level operations.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class Stoic {
 		/**
 		 * Local ConfigContainer instance.
 		 *
-		 * @var ConfigContainer
+		 * @var null|ConfigContainer
 		 */
-		protected $config = null;
+		protected null|ConfigContainer $config = null;
 		/**
 		 * Relative filesystem path for application's 'core' folder.
 		 *
-		 * @var string
+		 * @var null|string
 		 */
-		protected $corePath = null;
+		protected null|string $corePath = null;
 		/**
 		 * Local PdoHelper instance.
 		 *
-		 * @var PdoHelper
+		 * @var null|PdoHelper
 		 */
-		protected $db = null;
+		protected null|PdoHelper $db = null;
 		/**
 		 * Local FileHelper instance.
 		 *
-		 * @var FileHelper
+		 * @var null|FileHelper
 		 */
-		protected $fh = null;
+		protected null|FileHelper $fh = null;
 		/**
 		 * Local Logger instance.
 		 *
-		 * @var Logger
+		 * @var null|Logger
 		 */
-		protected $log = null;
+		protected null|Logger $log = null;
 		/**
 		 * Local instance of current request information.
 		 *
-		 * @var Request
+		 * @var null|Request
 		 */
-		protected $request = null;
+		protected null|Request $request = null;
 		/**
 		 * ParameterHelper instance which holds $_SESSION data.
 		 *
-		 * @var ParameterHelper
+		 * @var null|ParameterHelper
 		 */
-		protected $session = null;
+		protected null|ParameterHelper $session = null;
 
 
 		/**
@@ -68,36 +67,35 @@
 		 *
 		 * @var array
 		 */
-		protected static $instances = [];
+		protected static array $instances = [];
 
 
 		/**
-		 * Static method to retrieve the most recent singleton instance for the
-		 * system.  If instance exists but the Logger and PageVariables arguments
-		 * are provided, a new instance is created and returned from the stack. If
-		 * the instance doesn't exist, one is created.
+		 * Static method to retrieve the most recent singleton instance for the system. If instance exists but the Logger
+		 * and PageVariables arguments are provided, a new instance is created and returned from the stack. If the instance
+		 * doesn't exist, one is created.
 		 *
 		 * @param null|string $corePath Value of the relative filesystem path to get to the application's 'core' folder.
-		 * @param PageVariables $variables Collection of 'predefined' variables, if not supplied an instance is created from globals.
-		 * @param Logger $log Logger instance for use by instance, if not supplied a new instance is used.
+		 * @param null|PageVariables $variables Collection of 'predefined' variables, if not supplied an instance is created from globals.
+		 * @param null|Logger $log Logger instance for use by instance, if not supplied a new instance is used.
 		 * @param mixed $input Optional input data to use instead of reading from `php://input` stream.
-		 * @return Stoic
+		 * @return static
 		 */
-		public static function getInstance(?string $corePath = null, PageVariables $variables = null, Logger $log = null, $input = null) {
+		public static function getInstance(?string $corePath = null, ?PageVariables $variables = null, ?Logger $log = null, mixed $input = null) : static {
 			$class = get_called_class();
 
 			if (array_key_exists($class, static::$instances) === false) {
 				static::$instances[$class] = [];
 			}
 
-			if (count(static::$instances[$class]) < 1 || ($corePath !== null && !empty($corePath) && $variables !== null && $log !== null)) {
+			if (count(static::$instances[$class]) < 1 || (!empty($corePath) && $variables !== null && $log !== null)) {
 				if (count(static::$instances[$class]) < 1) {
 					static::$instances[$class][] = new $class($corePath, $variables ?? PageVariables::fromGlobals(), $log ?? new Logger(), $input);
 				} else {
 					$existingCore = false;
 					$insts = $class::getInstanceStack();
 
-					foreach (array_values($insts) as $i) {
+					foreach ($insts as $i) {
 						if ($i->getCorepath() == $corePath) {
 							$existingCore = true;
 
@@ -121,7 +119,7 @@
 		 *
 		 * @return Stoic[]
 		 */
-		public static function getInstanceStack() {
+		public static function getInstanceStack() : array {
 			$class = get_called_class();
 
 			if (array_key_exists($class, static::$instances) === false || count(static::$instances[$class]) < 1) {
@@ -130,7 +128,7 @@
 
 			$ret = [];
 
-			foreach (array_values(static::$instances[$class]) as $inst) {
+			foreach (static::$instances[$class] as $inst) {
 				$ret[] = $inst;
 			}
 
@@ -145,9 +143,10 @@
 		 * @param PageVariables $variables Collection of 'predefined' variables.
 		 * @param Logger $log Logger instance for use by instance.
 		 * @param mixed $input Optional input data to use instead of reading from `php://input` stream.
-		 * @param boolean $loadFiles Whether or not to attempt loading auxillary files while instantiating, defaults to true.
+		 * @param boolean $loadFiles Whether to attempt loading auxiliary files while instantiating, defaults to true.
+		 * @throws \Stoic\Web\Resources\InvalidRequestException
 		 */
-		protected function __construct(string $corePath, PageVariables $variables, Logger $log, $input = null, bool $loadFiles = true) {
+		protected function __construct(string $corePath, PageVariables $variables, Logger $log, mixed $input = null, bool $loadFiles = true) {
 			$this->log = $log;
 			$this->corePath = $corePath;
 			$this->config = new ConfigContainer();
@@ -218,8 +217,7 @@
 		}
 
 		/**
-		 * Returns the currently configured relative filesystem path for the 'core'
-		 * folder.
+		 * Returns the currently configured relative filesystem path for the 'core' folder.
 		 *
 		 * @return string
 		 */
@@ -273,23 +271,23 @@
 		}
 
 		/**
-		 * Loads any files in the provided path if they have the given extension.
-		 * Returns an array of any files that were loaded.
+		 * Loads any files in the provided path if they have the given extension. Returns an array of any files that were
+		 * loaded.
 		 *
 		 * @codeCoverageIgnore
 		 * @param string $path Path for folder to look for files within.
 		 * @param string $extension Extension to use when searching possible files.
-		 * @param boolean $caseInsensitive Whether or not to perform a case-insensitive extension comparison, defaults to `false`.
-		 * @param boolean $allowReloads Whether or not to allow loaded files to be reloaded, defaults to `false`.
+		 * @param boolean $caseInsensitive Whether to perform a case-insensitive extension comparison, defaults to `false`.
+		 * @param boolean $allowReloads Whether to allow loaded files to be reloaded, defaults to `false`.
 		 * @return string[]
 		 */
-		public function loadFilesByExtension(string $path, string $extension, bool $caseInsensitive = false, bool $allowReloads = false) {
-			$ret = [];
+		public function loadFilesByExtension(string $path, string $extension, bool $caseInsensitive = false, bool $allowReloads = false) : array {
+			$ret    = [];
 			$extLen = -1 * strlen($extension);
-			$files = $this->fh->getFolderFiles($path);
+			$files  = $this->fh->getFolderFiles($path);
 
 			if ($files !== null && count($files) > 0) {
-				foreach (array_values($files) as $file) {
+				foreach ($files as $file) {
 					$ext = substr($file, $extLen);
 
 					if ($caseInsensitive) {
@@ -331,9 +329,8 @@
 		}
 
 		/**
-		 * Attempts to set a header for the current request.  If any output has
-		 * occurred prior to this attempt, the method will log the attempt and
-		 * silently fail.
+		 * Attempts to set a header for the current request.  If any output has occurred prior to this attempt, the method
+		 * will log the attempt and silently fail.
 		 *
 		 * @codeCoverageIgnore
 		 * @param string $name String value of header name.

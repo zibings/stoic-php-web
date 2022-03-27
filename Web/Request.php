@@ -10,58 +10,53 @@
 	use Stoic\Web\Resources\ServerIndices;
 
 	/**
-	 * Class to represent a single API request and provide meta information about
-	 * the request to handler callbacks.
+	 * Class to represent a single API request and provide meta information about the request to handler callbacks.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class Request {
 		/**
-		 * Any available input data for the request. Can be JSON payload or from
-		 * request variables.
+		 * Any available input data for the request. Can be JSON payload or from request variables.
 		 *
 		 * @var mixed
 		 */
-		protected $input = null;
+		protected mixed $input = null;
 		/**
-		 * Whether or not the request is deemed valid.
+		 * Whether the request is deemed valid.
 		 *
-		 * @var boolean
+		 * @var bool
 		 */
-		protected $isValid = false;
+		protected bool $isValid = false;
 		/**
-		 * Whether or not the request has a JSON payload.
+		 * Whether the request has a JSON payload.
 		 *
-		 * @var boolean
+		 * @var bool
 		 */
-		protected $isJson = false;
+		protected bool $isJson = false;
 		/**
 		 * Enumerated value representing the request verb.
 		 *
-		 * @var RequestType
+		 * @var null|RequestType
 		 */
-		protected $requestType = null;
+		protected ?RequestType $requestType = null;
 		/**
 		 * Local instance of 'predefined' global variables.
 		 *
-		 * @var PageVariables
+		 * @var null|PageVariables
 		 */
-		protected $variables = null;
+		protected ?PageVariables $variables = null;
 
 
 		/**
-		 * Instantiates a new Request object, either taking information provided or
-		 * pulling automatically from the $_COOKIE, $_GET, and $_SERVER
-		 * superglobals as well as the `php://input` stream.
+		 * Instantiates a new Request object, either taking information provided or pulling automatically from the
+		 * $_COOKIE, $_GET, and $_SERVER superglobals as well as the `php://input` stream.
 		 *
-		 * @param array $server Optional server collection to use in place of $_SERVER superglobal.
+		 * @param null|PageVariables $variables Optional variable values to supply instead of using superglobals.
 		 * @param mixed $input Optional input data to use instead of reading from `php://input` stream.
-		 * @param array $get Optional get collection to use in place of $_GET superglobal.
-		 * @param array $cookie Optional cookie collection to use in place of $_COOKIE superglobal.
 		 * @throws InvalidRequestException
 		 */
-		public function __construct(PageVariables $variables = null, $input = null) {
+		public function __construct(?PageVariables $variables = null, mixed $input = null) {
 			$this->requestType = new RequestType(RequestType::ERROR);
 			$this->variables = $variables ?? PageVariables::fromGlobals();
 
