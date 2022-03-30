@@ -13,11 +13,10 @@
 	use Stoic\Web\Resources\PageVariables;
 
 	/**
-	 * Specialized version of Stoic singleton-ish class to more strictly
-	 * coordinate API routing.
+	 * Specialized version of Stoic singleton-ish class to more strictly coordinate API routing.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class Stoic extends \Stoic\Web\Stoic {
 		/**
@@ -25,34 +24,33 @@
 		 *
 		 * @var null|ChainHelper
 		 */
-		protected $authChain = null;
+		protected ?ChainHelper $authChain = null;
 		/**
 		 * Endpoint to serve if no route is matched.
 		 *
 		 * @var null|ApiEndpoint
 		 */
-		protected $defaultEndpoint = null;
+		protected ?ApiEndpoint $defaultEndpoint = null;
 		/**
 		 * Collection of registered endpoints.
 		 *
 		 * @var array
 		 */
-		protected $endpoints = [];
+		protected array $endpoints = [];
 
 
 		/**
-		 * Static method to retrieve the most recent singleton instance for the
-		 * system.  If instance exists but the Logger and PageVariables arguments
-		 * are provided, a new instance is created and returned from the stack. If
-		 * the instance doesn't exist, one is created.
+		 * Static method to retrieve the most recent singleton instance for the system.  If instance exists but the Logger
+		 * and PageVariables arguments are provided, a new instance is created and returned from the stack. If the instance
+		 * doesn't exist, one is created.
 		 *
 		 * @param null|string $corePath Value of the relative filesystem path to get to the application's 'core' folder.
-		 * @param PageVariables $variables Collection of 'predefined' variables, if not supplied an instance is created from globals.
-		 * @param Logger $log Logger instance for use by instance, if not supplied a new instance is used.
+		 * @param null|PageVariables $variables Collection of 'predefined' variables, if not supplied an instance is created from globals.
+		 * @param null|Logger $log Logger instance for use by instance, if not supplied a new instance is used.
 		 * @param mixed $input Optional input data to use instead of reading from `php://input` stream.
 		 * @return Stoic
 		 */
-		public static function getInstance(?string $corePath = null, PageVariables $variables = null, Logger $log = null, $input = null) {
+		public static function getInstance(?string $corePath = null, ?PageVariables $variables = null, ?Logger $log = null, mixed $input = null) : static {
 			$instance = parent::getInstance($corePath, $variables, $log, $input);
 
 			if ($instance->authChain === null) {
@@ -67,12 +65,11 @@
 
 
 		/**
-		 * Attempts to the the API request, outputting some default headers
-		 * (Content-Type, Access-Control-Allow-Origin, and Cache-Control). Option
-		 * to override URL parameter in case a change is made to the .htaccess
-		 * rules.
+		 * Attempts to handle the API request, outputting some default headers (Content-Type, Access-Control-Allow-Origin,
+		 * and Cache-Control). Option to override URL parameter in case a change is made to the .htaccess rules.
 		 *
 		 * @param string $urlParam Optional string value to change parameter for URL delivery via .htaccess, defaults to 'url'.
+		 * @throws \Stoic\Web\Resources\InvalidRequestException|\Stoic\Web\Resources\NonJsonInputException
 		 * @return void
 		 */
 		public function handle(string $urlParam = 'url') : void {
@@ -162,10 +159,10 @@
 		 *
 		 * @param callable $callback Endpoint callback to execute.
 		 * @param Request $request API request that is being passed to endpoint.
-		 * @param array $matches Array of matches (if any) from URL pattern match.
+		 * @param null|array $matches Array of matches (if any) from URL pattern match.
 		 * @return void
 		 */
-		protected function handleUserFunc(callable $callback, Request $request, array $matches = null) {
+		protected function handleUserFunc(callable $callback, Request $request, ?array $matches = null) : void {
 			$out = null;
 
 			ob_start();
@@ -215,7 +212,7 @@
 		 * @param mixed $authRoles Optional string, array of string values, or boolean value representing authorization requirements for endpoint.
 		 * @return void
 		 */
-		public function registerEndpoint(?string $verbs, ?string $pattern, callable $callback, $authRoles = null) : void {
+		public function registerEndpoint(?string $verbs, ?string $pattern, callable $callback, mixed $authRoles = null) : void {
 			$ep = new ApiEndpoint($authRoles, $callback, $pattern);
 
 			if ($pattern === null) {
@@ -226,7 +223,7 @@
 
 			$v = $this->splitVerbs($verbs);
 
-			foreach (array_values($v) as $verb) {
+			foreach ($v as $verb) {
 				if (array_key_exists($verb, $this->endpoints) === false) {
 					$this->endpoints[$verb] = [];
 				}
@@ -243,7 +240,7 @@
 		 * Sets and sends the HTTP response code.
 		 *
 		 * @codeCoverageIgnore
-		 * @param integer $code Integer value of response code.
+		 * @param int $code Integer value of response code.
 		 * @return void
 		 */
 		public function setHttpResponseCode(int $code) : void {
@@ -257,13 +254,13 @@
 		}
 
 		/**
-		 * Internal method to return array of verbs given a string that can be pipe
-		 * -delimited.  The '*' character returns all verbs.
+		 * Internal method to return array of verbs given a string that can be pipe-delimited.  The '*' character returns
+		 * all verbs.
 		 *
 		 * @param string $verbs String value to split into verb array.
 		 * @return string[]
 		 */
-		protected function splitVerbs(string $verbs) {
+		protected function splitVerbs(string $verbs) : array {
 			if ($verbs == '*') {
 				return [
 					'DELETE',

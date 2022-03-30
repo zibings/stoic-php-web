@@ -5,33 +5,30 @@
 	use Stoic\Utilities\StringHelper;
 
 	/**
-	 * Class to aid in generation of
-	 * basic HTML elements.
+	 * Class to aid in generation of basic HTML elements.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class HtmlElementHelper {
 		/**
-		 * Collection of any attributes and their
-		 * values associated with this element.
+		 * Collection of any attributes and their values associated with this element.
 		 *
 		 * @var array
 		 */
-		protected $attributes;
+		protected array $attributes;
 		/**
-		 * Simple (optional) string of contents for
-		 * this element.
+		 * Simple (optional) string of contents for this element.
 		 *
 		 * @var StringHelper
 		 */
-		protected $contents;
+		protected StringHelper $contents;
 		/**
 		 * Name of HTML element this object represents.
 		 *
 		 * @var string
 		 */
-		protected $tag;
+		protected string $tag;
 
 
 		/**
@@ -50,27 +47,25 @@
 		/**
 		 * Adds an attribute onto the element stack.
 		 *
-		 * If the element already exists, it will be
-		 * overwritten.
+		 * If the element already exists, it will be overwritten.
 		 *
 		 * @param string $name Attribute name; Must be a valid HTML attribute character set.
 		 * @param string $value Value for attribute; Must be a valid HTML attribute character set.
 		 * @return void
 		 */
-		public function addAttribute(string $name, string $value) {
+		public function addAttribute(string $name, string $value) : void {
 			$this->attributes[$name] = $value;
 
 			return;
 		}
 
 		/**
-		 * Appends contents to the element's current
-		 * contents.
+		 * Appends contents to the element's current contents.
 		 *
 		 * @param string $contents Content string to append to element contents.
 		 * @return void
 		 */
-		public function appendContents(string $contents) {
+		public function appendContents(string $contents) : void {
 			$this->contents->append($contents);
 
 			return;
@@ -95,13 +90,12 @@
 		}
 
 		/**
-		 * Sets the element's contents, overwriting
-		 * any that may have been present.
+		 * Sets the element's contents, overwriting any that may have been present.
 		 *
 		 * @param string|StringHelper $contents New contents for element.
 		 * @return void
 		 */
-		public function setContents($contents) {
+		public function setContents(string|StringHelper $contents) : void {
 			if (!($contents instanceof StringHelper)) {
 				$this->contents = new StringHelper($contents);
 			} else {
@@ -112,17 +106,14 @@
 		}
 
 		/**
-		 * Renders the element and any attributes/content
-		 * into a simple HTML tag.
+		 * Renders the element and any attributes/content into a simple HTML tag.
 		 *
-		 * Any attributes including
-		 * the ', <, and > characters will have them replaced
-		 * with the appropriate HTML entities.
+		 * Any attributes including the ', <, and > characters will have them replaced with the appropriate HTML entities.
 		 *
-		 * @param boolean $return Toggles the return or output of the rendered HTML, output by default.
-		 * @return StringHelper|void
+		 * @param bool $return Toggles the return or output of the rendered HTML, output by default.
+		 * @return StringHelper
 		 */
-		public function render($return = false) {
+		public function render(bool $return = false) : StringHelper {
 			$output = new StringHelper("<{$this->tag}");
 
 			if (count($this->attributes) > 0) {
@@ -147,6 +138,6 @@
 
 			echo($output);
 
-			return;
+			return new StringHelper();
 		}
 	}

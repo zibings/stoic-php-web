@@ -54,7 +54,7 @@
 		 *
 		 * @param null|PageVariables $variables Optional variable values to supply instead of using superglobals.
 		 * @param mixed $input Optional input data to use instead of reading from `php://input` stream.
-		 * @throws InvalidRequestException
+		 * @throws InvalidRequestException|\ReflectionException
 		 */
 		public function __construct(?PageVariables $variables = null, mixed $input = null) {
 			$this->requestType = new RequestType(RequestType::ERROR);
@@ -139,12 +139,10 @@
 		}
 
 		/**
-		 * Returns the request input payload as a ParameterHelper object. If the
-		 * request is a GET, the $_GET collection will be returned. If the request
-		 * doesn't have a JSON payload, an exception is thrown.
+		 * Returns the request input payload as a ParameterHelper object. If the request is a GET, the $_GET collection
+		 * will be returned. If the request doesn't have a JSON payload, an exception is thrown.
 		 *
-		 * @throws InvalidRequestException
-		 * @throws NonJsonInputException
+		 * @throws InvalidRequestException|NonJsonInputException
 		 * @return ParameterHelper
 		 */
 		public function getInput() : ParameterHelper {
@@ -182,7 +180,7 @@
 		 * @throws InvalidRequestException
 		 * @return mixed
 		 */
-		public function getRawInput() {
+		public function getRawInput() : mixed {
 			if (!$this->isValid) {
 				// @codeCoverageIgnoreStart
 				throw new InvalidRequestException("Can't get input on an invalid request");
@@ -212,6 +210,7 @@
 
 		/**
 		 * Retrieves the contents of the provided $_SERVER collection.
+		 *
 		 * @return ParameterHelper
 		 */
 		public function getServer() : ParameterHelper {
@@ -237,10 +236,9 @@
 		}
 
 		/**
-		 * Indicates whether or not the request is 'valid' based on the input
-		 * data.
+		 * Indicates whether the request is 'valid' based on the input data.
 		 *
-		 * @return boolean
+		 * @return bool
 		 */
 		public function isValid() : bool {
 			return $this->isValid;
