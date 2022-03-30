@@ -23,7 +23,7 @@
 			return;
 		}
 
-		public function process($sender, DispatchBase &$dispatch) {
+		public function process($sender, DispatchBase &$dispatch) : void {
 			if ($this->shouldAuth) {
 				$dispatch->authorize();
 			}

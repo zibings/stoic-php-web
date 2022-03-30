@@ -73,8 +73,6 @@
 				throw new InvalidRequestException("Invalid request method provided: {$reqMeth}");
 			}
 
-			$this->isValid = true;
-
 			if (!$this->requestType->is(RequestType::GET)) {
 				if ($input !== null) {
 					$this->input = $input;
@@ -88,8 +86,6 @@
 					}
 
 					// @codeCoverageIgnoreStart
-					$this->isValid = true;
-
 					json_decode(trim($this->input), true);
 
 					if (json_last_error() == JSON_ERROR_NONE) {
@@ -98,6 +94,8 @@
 					// @codeCoverageIgnoreEnd
 				}
 			}
+
+			$this->isValid = true;
 
 			return;
 		}
