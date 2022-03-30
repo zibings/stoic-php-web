@@ -2,6 +2,7 @@
 
 	namespace Stoic\Tests\Web;
 
+	use AndyM84\Config\ConfigContainer;
 	use PHPUnit\Framework\TestCase;
 
 	use Stoic\Log\Logger;
@@ -40,6 +41,7 @@
 			self::assertInstanceOf(FileHelper::class, $stoic1->getFileHelper());
 			self::assertInstanceOf(ParameterHelper::class, $stoic1->getSession());
 			self::assertInstanceOf(Logger::class, $stoic1->getLog());
+			self::assertInstanceOf(ConfigContainer::class, $stoic1->getConfig());
 
 			return;
 		}
