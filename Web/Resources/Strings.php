@@ -6,7 +6,7 @@
 	 * Collection of index constants for the PHP $_SERVER global variable.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class ServerIndices {
 		const AUTH_TYPE            = 'AUTH_TYPE';
@@ -49,11 +49,10 @@
 	}
 
 	/**
-	 * Collection of index constants used for initializing an
-	 * ApiAuthorizationDispatch object.
+	 * Collection of index constants used for initializing an ApiAuthorizationDispatch object.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class AuthorizationDispatchStrings {
 		const INDEX_CONSUMABLE = 'consumable';
@@ -65,7 +64,7 @@
 	 * Collection of various strings used for Stoic operation.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class StoicStrings {
 		const SETTINGS_FILE_PATH = '~/siteSettings.json';
@@ -75,7 +74,7 @@
 	 * Collection of various settings strings for Stoic.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class SettingsStrings {
 		const ASSETS_PATH       = 'assetsPath';

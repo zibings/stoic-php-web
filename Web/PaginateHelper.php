@@ -6,62 +6,61 @@
 	 * Performs common pagination math operations.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class PaginateHelper {
 		/**
 		 * Number of the currently active page.
 		 *
-		 * @var integer
+		 * @var int
 		 */
-		public $currentPage;
+		public int $currentPage;
 		/**
 		 * Number of entries to count per page.
 		 *
-		 * @var integer
+		 * @var int
 		 */
-		public $entriesPerPage;
+		public int $entriesPerPage;
 		/**
 		 * Entry offset based on current page.
 		 *
-		 * @var integer
+		 * @var int
 		 */
-		public $entryOffset;
+		public int $entryOffset;
 		/**
 		 * Number of the previous page.
 		 *
-		 * @var integer
+		 * @var int
 		 */
-		public $lastPage;
+		public int $lastPage;
 		/**
 		 * Number of the next page.
 		 *
-		 * @var integer
+		 * @var int
 		 */
-		public $nextPage;
+		public int $nextPage;
 		/**
 		 * Total number of entries in set.
 		 *
-		 * @var integer
+		 * @var int
 		 */
-		public $totalEntries;
+		public int $totalEntries;
 		/**
 		 * Total number of pages in set.
 		 *
-		 * @var integer
+		 * @var int
 		 */
-		public $totalPages;
+		public int $totalPages;
 
 
 		/**
-		 * Instantiates a new PaginateHelper object, calculating
-		 * offset and total/next/last pages.
+		 * Instantiates a new PaginateHelper object, calculating offset and total/next/last pages.
 		 *
-		 * @param integer $currentPage Current page number for set.
-		 * @param integer $totalEntries Total number of entires in set.
-		 * @param integer $entriesPerPage Number of entries per page in set.
+		 * @param int $currentPage Current page number for set.
+		 * @param int $totalEntries Total number of entries in set.
+		 * @param int $entriesPerPage Number of entries per page in set.
 		 */
-		public function __construct($currentPage, $totalEntries, $entriesPerPage) {
+		public function __construct(int $currentPage, int $totalEntries, int $entriesPerPage) {
 			$this->currentPage = $currentPage;
 			$this->entriesPerPage = $entriesPerPage;
 			$this->totalEntries = $totalEntries;
@@ -72,12 +71,11 @@
 		}
 
 		/**
-		 * Calculates all pagination metrics based on
-		 * supplied data.
+		 * Calculates all pagination metrics based on supplied data.
 		 *
 		 * @return void
 		 */
-		private function calculate() {
+		private function calculate() : void {
 			if ($this->totalEntries < 1) {
 				$this->totalPages = 1;
 				$this->nextPage = 0;
@@ -115,10 +113,10 @@
 		/**
 		 * Returns array of page numbers based on current metrics.
 		 *
-		 * @param integer $numPages Optional number of page indices to produce.
-		 * @return integer[]
+		 * @param int $numPages Optional number of page indices to produce.
+		 * @return int[]
 		 */
-		public function getPages($numPages = 5) {
+		public function getPages(int $numPages = 5) : array {
 			$ret = array();
 			$st = 0;
 

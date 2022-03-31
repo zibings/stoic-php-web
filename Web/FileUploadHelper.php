@@ -8,7 +8,7 @@
 	 * Class that normalizes uploaded file information.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class FileUploadHelper {
 		/**
@@ -16,15 +16,15 @@
 		 *
 		 * @var array
 		 */
-		protected $files = [];
+		protected array $files = [];
 
 
 		/**
-		 * Instanties a new FileUploadHelper object.
+		 * Instantiates a new FileUploadHelper object.
 		 *
-		 * @param array $files Optional array of uploaded file information, uses $_FILES global if not provided.
+		 * @param null|array $files Optional array of uploaded file information, uses $_FILES global if not provided.
 		 */
-		public function __construct(array $files = null) {
+		public function __construct(?array $files = null) {
 			$files = $files ?? $_FILES;
 
 			foreach (array_keys($files) as $key) {
@@ -50,7 +50,7 @@
 		 * @param string $key String value of uploaded file key.
 		 * @return UploadedFile[]
 		 */
-		public function getFile(string $key) {
+		public function getFile(string $key) : array {
 			if (array_key_exists($key, $this->files) === false) {
 				return [];
 			}

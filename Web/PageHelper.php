@@ -10,63 +10,63 @@
 	 * Class to hold basic information for a web page.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class PageHelper {
 		/**
 		 * Internal ParameterHelper instance containing $_GET collection.
 		 *
-		 * @var ParameterHelper
+		 * @var null|ParameterHelper
 		 */
-		protected $get = null;
+		protected ?ParameterHelper $get = null;
 		/**
 		 * Collection of meta tags for the page.
 		 *
 		 * @var HtmlElementHelper[]
 		 */
-		protected $metaTags = [];
+		protected array $metaTags = [];
 		/**
 		 * Identifier for this page object.
 		 *
-		 * @var StringHelper
+		 * @var null|StringHelper
 		 */
-		protected $name = null;
+		protected ?StringHelper $name = null;
 		/**
 		 * Internal ParameterHelper instance containing $_POST collection.
 		 *
-		 * @var ParameterHelper
+		 * @var null|ParameterHelper
 		 */
-		protected $post = null;
+		protected ?ParameterHelper $post = null;
 		/**
 		 * Internal ParameterHelper instance containing $_REQUEST collection.
 		 *
-		 * @var ParameterHelper
+		 * @var null|ParameterHelper
 		 */
-		protected $request = null;
+		protected ?ParameterHelper $request = null;
 		/**
 		 * Represents the root path for assets relative to this page.
 		 *
-		 * @var StringHelper
+		 * @var null|StringHelper
 		 */
-		protected $root = null;
+		protected ?StringHelper $root = null;
 		/**
 		 * Page title string.
 		 *
-		 * @var StringHelper
+		 * @var null|StringHelper
 		 */
-		protected $title = null;
+		protected ?StringHelper $title = null;
 		/**
 		 * Optional string for prefix of page title.
 		 *
-		 * @var StringHelper
+		 * @var null|StringHelper
 		 */
-		protected $titlePrefix = null;
+		protected ?StringHelper $titlePrefix = null;
 		/**
 		 * Optional separator for page title and prefix.
 		 *
-		 * @var StringHelper
+		 * @var null|StringHelper
 		 */
-		protected $titleSeparator = null;
+		protected ?StringHelper $titleSeparator = null;
 		
 		
 		/**
@@ -74,16 +74,16 @@
 		 *
 		 * @var PageHelper[]
 		 */
-		protected static $pages = [];
+		protected static array $pages = [];
 
 
 		/**
 		 * Static method to retrieve (or create) a PageHelper object.
 		 *
 		 * @param string $pagePath Path for the page, used as identifier/name.
-		 * @param ParameterHelper $get Optional ParameterHelper instance containing $_GET collection, defaults to contents of $_GET.
-		 * @param ParameterHelper $post Optional ParameterHelper instance containing $_POST collection, defaults to contents of $_POST.
-		 * @param ParameterHelper $request Optional ParameterHelper instance containing $_REQUEST collection, defaults to contents of $_REQUEST.
+		 * @param null|ParameterHelper $get Optional ParameterHelper instance containing $_GET collection, defaults to contents of $_GET.
+		 * @param null|ParameterHelper $post Optional ParameterHelper instance containing $_POST collection, defaults to contents of $_POST.
+		 * @param null|ParameterHelper $request Optional ParameterHelper instance containing $_REQUEST collection, defaults to contents of $_REQUEST.
 		 * @return PageHelper
 		 */
 		public static function &getPage(string $pagePath, ParameterHelper $get = null, ParameterHelper $post = null, ParameterHelper $request = null) : PageHelper {
@@ -110,8 +110,7 @@
 		}
 
 		/**
-		 * Static method to return the root path by removing the given page path
-		 * from $_SERVER['SCRIPT_NAME'].
+		 * Static method to return the root path by removing the given page path from $_SERVER['SCRIPT_NAME'].
 		 *
 		 * @param string $pagePath Path value for page, used to clean the server global value.
 		 * @return StringHelper
@@ -128,8 +127,7 @@
 
 
 		/**
-		 * Instantiates a new PageHelper object using the provided name as the root
-		 * path.
+		 * Instantiates a new PageHelper object using the provided name as the root path.
 		 *
 		 * @param string $name String identifier for page name/root-path.
 		 */
@@ -155,7 +153,7 @@
 		 * @param string $content Value of 'content' attribute on meta element.
 		 * @return void
 		 */
-		public function addMetaTag(string $name, string $content) {
+		public function addMetaTag(string $name, string $content) : void {
 			$tag = new HtmlElementHelper('meta');
 			$tag->addAttribute('name', $name);
 			$tag->addAttribute('content', $content);
@@ -166,11 +164,10 @@
 		}
 
 		/**
-		 * Converts a given path, if it has '~' as its first character, to be
-		 * relative to the root URL path for the page.
+		 * Converts a given path, if it has '~' as its first character, to be relative to the root URL path for the page.
 		 *
 		 * @param string $path Asset path to convert.
-		 * @param array $queryVars Optional array of query string items to append to the URL, in format `["key" => "val"]`.
+		 * @param null|array $queryVars Optional array of query string items to append to the URL, in format `["key" => "val"]`.
 		 * @param bool $includeDomain Optional toggle to include the current domain name in the converted path, defaults to `false`.
 		 * @param int $flags Optional entity conversion flags for calls to htmlspecialchars(), defaults to `ENT_COMPAT | ENT_HTML401`.
 		 * @param string $encoding Optional encoding for entity conversion, defaults to `'UTF-8'`.
@@ -237,7 +234,7 @@
 		/**
 		 * Retrieves the compiled root URL path, optionally including the domain.
 		 *
-		 * @param boolean $includeDomain Optional flag to include the domain name with the root URL path.
+		 * @param bool $includeDomain Optional flag to include the domain name with the root URL path.
 		 * @return StringHelper
 		 */
 		public function getRootUrlPath(bool $includeDomain = false) : StringHelper {
@@ -252,8 +249,7 @@
 		}
 
 		/**
-		 * Returns the page title, including prefix and separator if they are
-		 * present.
+		 * Returns the page title, including prefix and separator if they are present.
 		 *
 		 * @return StringHelper
 		 */
@@ -272,14 +268,14 @@
 		 * @throws \InvalidArgumentException
 		 * @return void
 		 */
-		public function setRoot(string $root) {
+		public function setRoot(string $root) : void {
 			$root = trim($root);
 
 			if (empty($root)) {
 				throw new \InvalidArgumentException("Cannot provide empty root path to PageHelper object");
 			}
 
-			if (substr($root, -1) != '/') {
+			if (!str_ends_with($root, '/')) {
 				$root .= '/';
 			}
 
@@ -294,7 +290,7 @@
 		 * @param string $title String for page title value.
 		 * @return void
 		 */
-		public function setTitle(string $title) {
+		public function setTitle(string $title) : void {
 			$this->title = new StringHelper($title);
 
 			return;
@@ -307,7 +303,7 @@
 		 * @param string $separator Optional string for separator value, default is ' | '.
 		 * @return void
 		 */
-		public function setTitlePrefix(string $prefix, string $separator = ' | ') {
+		public function setTitlePrefix(string $prefix, string $separator = ' | ') : void {
 			$this->titlePrefix = new StringHelper($prefix);
 			$this->titleSeparator = new StringHelper($separator);
 
@@ -315,8 +311,8 @@
 		}
 
 		/**
-		 * Attempts to send a redirect header response to the browser with optional
-		 * replacement of root path via the '~' character.
+		 * Attempts to send a redirect header response to the browser with optional replacement of root path via the '~'
+		 * character.
 		 *
 		 * @codeCoverageIgnore
 		 * @param string $destination String value of destination path for redirect (prepend with '~' to make relative to root path).
@@ -325,7 +321,7 @@
 		 * @throws HeadersAlreadySentException
 		 * @return void
 		 */
-		public function redirectTo(string $destination, bool $permanent = false, bool $includeDomain = false) {
+		public function redirectTo(string $destination, bool $permanent = false, bool $includeDomain = false) : void {
 			if ($this->root !== null && $destination[0] == '~') {
 				$root = $this->getRootUrlPath($includeDomain);
 

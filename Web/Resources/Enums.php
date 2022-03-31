@@ -8,7 +8,7 @@
 	 * Enumerated HTTP request verbs.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class RequestType extends EnumBase {
 		const DELETE  = 1;
@@ -24,7 +24,7 @@
 	 * Enumerated HTTP status codes.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class HttpStatusCodes extends EnumBase {
 		const CONTINU                          = 100;
@@ -95,7 +95,7 @@
 		 *
 		 * @var array
 		 */
-		protected static $_descriptions = [
+		protected static array $_descriptions = [
 			self::CONTINU                          => 'Continue',
 			self::PROTO_SWITCH                     => 'Switching Protocols',
 			self::PROCESSING                       => 'Processing',
@@ -161,8 +161,7 @@
 
 
 		/**
-		 * Retrieves the friendly description text for the currently set status
-		 * code.
+		 * Retrieves the friendly description text for the currently set status code.
 		 *
 		 * @return string
 		 */

@@ -9,27 +9,27 @@
 	 * Dispatch to allow processing of request authorization.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class ApiAuthorizationDispatch extends DispatchBase {
 		/**
 		 * Internal ParameterHelper instance containing the request input.
 		 *
-		 * @var ParameterHelper
+		 * @var null|ParameterHelper
 		 */
-		protected $input = null;
+		protected ?ParameterHelper $input = null;
 		/**
 		 * Internal state determining if request is authorized.
 		 *
-		 * @var boolean
+		 * @var bool
 		 */
-		protected $isAuthorized = false;
+		protected bool $isAuthorized = false;
 		/**
 		 * The required roles (if any) that were required by the handler.
 		 *
-		 * @var null|boolean|string[]
+		 * @var null|bool|string[]
 		 */
-		protected $requiredRoles = null;
+		protected null|bool|array $requiredRoles = null;
 
 
 		/**
@@ -55,23 +55,23 @@
 		/**
 		 * Retrieves roles (if any) required by the handler.
 		 *
-		 * @return boolean|null|string[]
+		 * @return null|bool|string[]
 		 */
-		public function getRequiredRoles() {
+		public function getRequiredRoles() : null|bool|array {
 			return $this->requiredRoles;
 		}
 
 		/**
-		 * Initializes the dispatch so it can be processed.  Requires at minimum
-		 * the `AuthorizationDispatchStrings::INDEX_INPUT` and
-		 * `AuthorizationDispatchStrings::INDEX_ROLES` array values, with the
-		 * `AuthorizationDispatchStrings::INDEX_CONSUMABLE` value being optional to
-		 * specify if the dispatch should be marked as 'consumable'.
+		 * Initializes the dispatch so it can be processed.  Requires at minimum the
+		 * `AuthorizationDispatchStrings::INDEX_INPUT` and `AuthorizationDispatchStrings::INDEX_ROLES` array values, with
+		 * the `AuthorizationDispatchStrings::INDEX_CONSUMABLE` value being optional to specify if the dispatch should be
+		 * marked as 'consumable'.
 		 *
 		 * @param mixed $input Input array variable, fails gracefully if in wrong format.
+		 * @throws \Exception
 		 * @return void
 		 */
-		public function initialize($input) {
+		public function initialize(mixed $input) : void {
 			if (!is_array($input) || count($input) < 2) {
 				return;
 			}
@@ -99,7 +99,7 @@
 		/**
 		 * Returns the internal authorized state.
 		 *
-		 * @return boolean
+		 * @return bool
 		 */
 		public function isAuthorized() : bool {
 			return $this->isAuthorized;

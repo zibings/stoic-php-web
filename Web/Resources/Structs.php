@@ -3,43 +3,41 @@
 	namespace Stoic\Web\Resources;
 
 	/**
-	 * Struct for holding the information comprising an endpoint used by the API
-	 * subsystem.
+	 * Struct for holding the information comprising an endpoint used by the API subsystem.
 	 *
 	 * @codeCoverageIgnore
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class ApiEndpoint {
 		/**
-		 * Value that determines required authentication 'roles'.  Can be boolean,
-		 * a string, or an array of strings.
+		 * Value that determines required authentication 'roles'.  Can be boolean, a string, or an array of strings.
 		 *
-		 * @var boolean|string|string[]
+		 * @var null|bool|string|string[]
 		 */
-		public $authRoles = null;
+		public null|bool|string|array $authRoles = null;
 		/**
 		 * Callback to use when the endpoint is the given route.
 		 *
 		 * @var null|callable
 		 */
-		public $callback = null;
+		public mixed $callback = null;
 		/**
 		 * String pattern for the URL matching.
 		 *
 		 * @var null|string
 		 */
-		public $pattern = null;
+		public ?string $pattern = null;
 
 
 		/**
 		 * Instantiates a new ApiEndpoint object using the given optional values.
 		 *
 		 * @param mixed $authRoles String, array of string values, or boolean representing role(s) or a basic authorized/not-authorized requirement for the request.
-		 * @param callable $callback Endpoint callback to use when the pattern matches the request.
-		 * @param string $pattern String of URL pattern for callback routing.
+		 * @param null|callable $callback Endpoint callback to use when the pattern matches the request.
+		 * @param null|string $pattern String of URL pattern for callback routing.
 		 */
-		public function __construct($authRoles = false, callable $callback = null, ?string $pattern = null) {
+		public function __construct(mixed $authRoles = false, ?callable $callback = null, ?string $pattern = null) {
 			$this->authRoles = $authRoles;
 			$this->callback = $callback;
 			$this->pattern = $pattern;
@@ -53,7 +51,7 @@
 	 *
 	 * @codeCoverageIgnore
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class PageVariables {
 		/**
@@ -61,58 +59,57 @@
 		 *
 		 * @var array
 		 */
-		public $cookie;
+		public array $cookie;
 		/**
 		 * Environment variables.
 		 *
 		 * @var array
 		 */
-		public $env;
+		public array $env;
 		/**
 		 * HTTP file upload variables.
 		 *
 		 * @var array
 		 */
-		public $files;
+		public array $files;
 		/**
 		 * HTTP GET variables.
 		 *
 		 * @var array
 		 */
-		public $get;
+		public array $get;
 		/**
 		 * HTTP POST variables.
 		 *
 		 * @var array
 		 */
-		public $post;
+		public array $post;
 		/**
 		 * HTTP request variables.
 		 *
 		 * @var array
 		 */
-		public $request;
+		public array $request;
 		/**
 		 * Server and execution environment information.
 		 *
 		 * @var array
 		 */
-		public $server;
+		public array $server;
 		/**
 		 * Session variables.
 		 *
 		 * @var array
 		 */
-		public $session;
+		public array $session;
 
 
 		/**
-		 * Static method to return the 'predefined' global variables assigned to
-		 * a struct instance.
+		 * Static method to return the 'predefined' global variables assigned to a struct instance.
 		 *
 		 * @return PageVariables
 		 */
-		public static function fromGlobals() {
+		public static function fromGlobals() : PageVariables {
 			return new PageVariables(
 				$_COOKIE  ?? [],
 				$_ENV     ?? [],
@@ -127,8 +124,7 @@
 
 
 		/**
-		 * Instantiates a new PageVariables instance using the provided arrays for
-		 * the 'predefined' variables.
+		 * Instantiates a new PageVariables instance using the provided arrays for the 'predefined' variables.
 		 *
 		 * @param array $cookie HTTP cookies.
 		 * @param array $env Environment variables.
@@ -158,47 +154,47 @@
 	 *
 	 * @codeCoverageIgnore
 	 * @package Stoic\Web
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 */
 	class UploadedFile {
 		/**
 		 * The error code associated with the file upload.
 		 *
-		 * @var integer
+		 * @var int
 		 */
-		public $error;
+		public int $error;
 		/**
 		 * Original name of the file on the client machine.
 		 *
 		 * @var string
 		 */
-		public $name;
+		public string $name;
 		/**
 		 * The size, in bytes, of the uploaded file.
 		 *
-		 * @var integer
+		 * @var int
 		 */
-		public $size;
+		public int $size;
 		/**
 		 * The temporary file name of the file on the server.
 		 *
 		 * @var string
 		 */
-		public $tmpName;
+		public string $tmpName;
 		/**
 		 * The MIME type of the file, if provided by the browser.
 		 *
 		 * @var string
 		 */
-		public $type;
+		public string $type;
 
 
 		/**
 		 * Instantiates a new UploadedFile instance using the provided information.
 		 *
-		 * @param integer $error Error code for file upload.
+		 * @param int $error Error code for file upload.
 		 * @param string $name Original name of the file.
-		 * @param integer $size Size of uploaded file in bytes.
+		 * @param int $size Size of uploaded file in bytes.
 		 * @param string $tmpName Temporary file name on server.
 		 * @param string $type MIME type of file.
 		 */
@@ -218,56 +214,25 @@
 		 * @return string
 		 */
 		public function getError() : string {
-			$ret = '';
-
-			switch ($this->error) {
-				case UPLOAD_ERR_OK:
-					$ret = "Upload completed successfully.";
-
-					break;
-				case UPLOAD_ERR_INI_SIZE:
-					$ret = "Upload exceeded maximum file size on server";
-
-					break;
-				case UPLOAD_ERR_FORM_SIZE:
-					$ret = "Upload exceeded maximum file size in browser";
-
-					break;
-				case UPLOAD_ERR_PARTIAL:
-					$ret = "Upload didn't complete";
-
-					break;
-				case UPLOAD_ERR_NO_FILE:
-					$ret = "No file was uploaded";
-
-					break;
-				case UPLOAD_ERR_NO_TMP_DIR:
-					$ret = "Missing temporary folder on server";
-
-					break;
-				case UPLOAD_ERR_CANT_WRITE:
-					$ret = "Failed to write upload to disk";
-
-					break;
-				case UPLOAD_ERR_EXTENSION:
-					$ret = "A server extension stopped the upload";
-
-					break;
-				default:
-					$ret = "Unknown error code during file upload";
-
-					break;
-			}
-
-			return $ret;
+			return match ($this->error) {
+				UPLOAD_ERR_OK         => "Upload completed successfully.",
+				UPLOAD_ERR_INI_SIZE   => "Upload exceeded maximum file size on server",
+				UPLOAD_ERR_FORM_SIZE  => "Upload exceeded maximum file size in browser",
+				UPLOAD_ERR_PARTIAL    => "Upload didn't complete",
+				UPLOAD_ERR_NO_FILE    => "No file was uploaded",
+				UPLOAD_ERR_NO_TMP_DIR => "Missing temporary folder on server",
+				UPLOAD_ERR_CANT_WRITE => "Failed to write upload to disk",
+				UPLOAD_ERR_EXTENSION  => "A server extension stopped the upload",
+				default               => "Unknown error code during file upload",
+			};
 		}
 
 		/**
 		 * Determines if the file was uploaded successfully.
 		 *
-		 * @return boolean
+		 * @return bool
 		 */
-		public function isValid() {
+		public function isValid() : bool {
 			return $this->error == 0;
 		}
 	}
