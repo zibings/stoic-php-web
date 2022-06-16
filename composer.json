@@ -1,7 +1,7 @@
 {
 	"name": "stoic/web",
 	"description": "Web site helper components for the Stoic framework",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"homepage": "https://stoic-framework.com",
 	"autoload": {
 		"classmap": ["Web/"],
@@ -14,8 +14,8 @@
 		"stoic/stoic": "^1.1",
 		"stoic/io": "^1.1",
 		"stoic/pdo": "^1.1",
-		"andym84/config": "^1.0",
-		"league/plates": "^3.3",
+		"andym84/config": "^1",
+		"league/plates": "^3",
 		"ext-pdo": "*"
 	},
 	"require-dev": {
