@@ -178,19 +178,19 @@
 				// @codeCoverageIgnoreEnd
 			}, $this->log);
 
-			if (!defined('STOIC_DISABLE_DATABASE')) {
+			if (!defined('STOIC_DISABLE_DATABASE') || !STOIC_DISABLE_DATABASE) {
 				$dsn = $this->config->get(SettingsStrings::DB_DSN, 'sqlite::memory:');
 				$user = $this->config->get(SettingsStrings::DB_USER, '');
 				$pass = $this->config->get(SettingsStrings::DB_PASS, '');
 
 				$this->setDb(new PdoHelper($dsn, $user, $pass));
 
-				if (!defined('STOIC_DISABLE_DB_EXCEPTIONS')) {
+				if (!defined('STOIC_DISABLE_DB_EXCEPTIONS') || !STOIC_DISABLE_DB_EXCEPTIONS) {
 					$this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 				}
 			}
 
-			if (!defined('STOIC_DISABLE_SESSION') && !headers_sent()) {
+			if ((!defined('STOIC_DISABLE_SESSION') || !STOIC_DISABLE_SESSION) && !headers_sent()) {
 				// @codeCoverageIgnoreStart
 				if (session_status() != PHP_SESSION_ACTIVE && session_status() != PHP_SESSION_DISABLED) {
 					session_start();
