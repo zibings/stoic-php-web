@@ -11,6 +11,7 @@
 	use Stoic\Web\Resources\AuthorizationDispatchStrings;
 	use Stoic\Web\Resources\HttpStatusCodes;
 	use Stoic\Web\Resources\PageVariables;
+	use Stoic\Web\Resources\ServerIndices;
 
 	/**
 	 * Specialized version of Stoic singleton-ish class to more strictly coordinate API routing.
@@ -84,6 +85,14 @@
 			$this->setHeader('Cache-Control', 'max-age=500');
 			$this->setHeader('Content-Type', 'application/json');
 			$this->setHeader('Access-Control-Allow-Origin', '*');
+
+			if ($server->has(ServerIndices::REQUEST_METHOD) && $server->getString(ServerIndices::REQUEST_METHOD, '') == 'OPTIONS' && $server->has('HTTP_ACCESS_CONTROL_REQUEST_METHOD')) {
+				header('HTTP/1.1 200 OK');
+				$this->setHeader('Access-Control-Allow-Headers', 'Accept, Authorization, Content-Type, X-CSRF-Token, App-Token, Token');
+				$this->setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+
+				exit;
+			}
 
 			if (!$get->has($urlParam)) {
 				if ($this->defaultEndpoint !== null) {
