@@ -104,9 +104,7 @@
 	}
 
 	if (!$fh->fileExists(StoicStrings::SETTINGS_FILE_PATH)) {
-		fwrite(STDERR, "You must initialize your application:" . PHP_EOL . PHP_EOL . "    vendor/bin/stoic-create" . PHP_EOL);
-
-		die(1);
+		$fh->putContents(StoicStrings::SETTINGS_FILE_PATH, "");
 	}
 
 	$settings = new ConfigContainer($fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
@@ -115,7 +113,7 @@
 	$ch->putLine();
 	$ch->put("Performing configuration migration.. ");
 
-	$cfgHelper = new Migrator($fh->pathJoin($settings->get(SettingsStrings::ASSETS_PATH), $settings->get(SettingsStrings::MIGRATE_CFG_PATH)));
+	$cfgHelper = new Migrator($fh->pathJoin($settings->get(SettingsStrings::ASSETS_PATH, '~/assets'), $settings->get(SettingsStrings::MIGRATE_CFG_PATH, 'migrations/cfg')));
 	$cfgHelper->migrate();
 
 	$ch->putLine("DONE");

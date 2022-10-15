@@ -90,29 +90,31 @@
 	$fh->makeFolder($clsPath, 0777, true);
 	$fh->makeFolder($rpoPath, 0777, true);
 	$fh->makeFolder($utlPath, 0777, true);
+	$fh->makeFolder('~/web',  0777, true);
 
 	$baseIndex = <<<'EOF'
 <?php
 
-	require('vendor/autoload.php');
+	const STOIC_CORE_PATH = '../';
+	require(STOIC_CORE_PATH . 'vendor/autoload.php');
 
 	use League\Plates\Engine;
 	use Stoic\Web\PageHelper;
 	use Stoic\Web\Stoic;
 
-	$stoic = Stoic::getInstance('./');
+	$stoic = Stoic::getInstance(STOIC_CORE_PATH);
 
 	$page = PageHelper::getPage('index.php');
 	$page->setTitle('Stoic Framework v1');
 
 	$tpl = new Engine(null, 'tpl.php');
-	$tpl->addFolder('page', './tpl/index');
+	$tpl->addFolder('page', STOIC_CORE_PATH . 'tpl/index');
 
 	echo($tpl->render('page::index', ['page' => $page]));
 
 EOF;
 
-	$fh->putContents('~/index.php', $baseIndex);
+	$fh->putContents('~/web/index.php', $baseIndex);
 
 	$indexTpl = <<<'EOF'
 <!DOCTYPE html>
