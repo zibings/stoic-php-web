@@ -262,6 +262,44 @@
 		}
 
 		/**
+		 * Joints a collection of strings together into a single path, removing any leading or trailing slashes.
+		 *
+		 * @param string ...$paths
+		 * @return StringHelper
+		 */
+		public function pathJoin(string ...$paths) : StringHelper {
+			if (count($paths) < 1) {
+				return new StringHelper();
+			}
+
+			$path  = [];
+			$parts = count($paths);
+
+			for ($i = 0; $i < $parts; $i++) {
+				$tmp = trim($paths[$i]);
+				$len = strlen($tmp);
+
+				if (empty($tmp) || ($len == 1 && ($tmp[0] == '/'))) {
+					continue;
+				}
+
+				if ($tmp[0] == '/') {
+					$tmp = substr($tmp, 1);
+				}
+
+				$len = strlen($tmp);
+
+				if ($tmp[$len - 1] == '/') {
+					$tmp = substr($tmp, 0, $len - 1);
+				}
+
+				$path[] = $tmp;
+			}
+
+			return new StringHelper(implode('/', $path));
+		}
+
+		/**
 		 * Sets the root path for assets relative to this page.
 		 *
 		 * @param string $root String value to set as root path.

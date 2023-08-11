@@ -111,4 +111,25 @@
 
 			return;
 		}
+
+		public function test_PathJoin() {
+			$_SERVER['SCRIPT_NAME'] = '/test/file.php';
+			$_SERVER['HTTPS'] = 'off';
+			$_SERVER['HTTP_HOST'] = 'somedomain.testing.com';
+			$page = CommunicativePageHelper::getPage("file.php");
+
+			self::assertEquals('~/someFile.css', $page->pathJoin('~/someFile.css')->__toString());
+			self::assertEquals('~/someFile.css', $page->pathJoin('~', 'someFile.css')->__toString());
+			self::assertEquals('~/someFile.css', $page->pathJoin('~/', 'someFile.css')->__toString());
+			self::assertEquals('~/folder/someFile.css', $page->pathJoin('~/', '/folder', 'someFile.css')->__toString());
+			self::assertEquals('~/folder/someFile.css', $page->pathJoin('~/', 'folder/', 'someFile.css')->__toString());
+			self::assertEquals('~/folder/someFile.css', $page->pathJoin('~/', '/folder/', 'someFile.css')->__toString());
+			self::assertEquals('~/folder/someFile.css', $page->pathJoin('~/', 'folder', 'someFile.css')->__toString());
+			self::assertEquals('~/folder/someFile.css', $page->pathJoin('~/', '/', 'folder', 'someFile.css')->__toString());
+			self::assertEquals('~/f/folder/someFile.css', $page->pathJoin('~/', 'f/', 'folder', 'someFile.css')->__toString());
+
+			CommunicativePageHelper::clearRegisteredPages();
+
+			return;
+		}
 	}
