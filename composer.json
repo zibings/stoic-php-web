@@ -1,7 +1,7 @@
 {
 	"name": "stoic/web",
 	"description": "Web site helper components for the Stoic framework",
-	"version": "1.1.4",
+	"version": "1.2.0",
 	"homepage": "https://stoic-framework.com",
 	"autoload": {
 		"classmap": ["Web/"],
@@ -10,7 +10,7 @@
 		]
 	},
 	"require": {
-		"php": ">=8.0",
+		"php": ">=8.2",
 		"stoic/stoic": "^1.1",
 		"stoic/io": "^1.1",
 		"stoic/pdo": "^1.1",
