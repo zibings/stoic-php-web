@@ -11,9 +11,9 @@
 	},
 	"require": {
 		"php": ">=8.2",
-		"stoic/stoic": "^1.1",
-		"stoic/io": "^1.1",
-		"stoic/pdo": "^1.1",
+		"stoic/stoic": "^1",
+		"stoic/io": "^1",
+		"stoic/pdo": "^1",
 		"andym84/config": "^1",
 		"league/plates": "^3",
 		"ext-pdo": "*"
