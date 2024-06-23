@@ -72,7 +72,6 @@
 			$_SERVER['REQUEST_METHOD'] = 'GET';
 
 			$stoic = Stoic::getInstance('./', PageVariables::fromGlobals(), new Logger());
-			$stoic->handle('');
 			$this->performOutputTest($stoic, '"Invalid URL"');
 
 			$_GET['url'] = 'someUrl';
