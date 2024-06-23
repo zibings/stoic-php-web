@@ -44,24 +44,24 @@
 	use Stoic\Web\Resources\StoicStrings;
 
 	// Script constants
-	define('SCRIPT_NAME',        'Stoic Framework Migration Utility');
-	define('SCRIPT_DESCRIPTION', 'Script that attempts to apply any available configuration\nand database migration files');
-	define('SCRIPT_USAGE',       "    vendor/bin/stoic-migrate -up // Migrates the configuration and runs the `up` scripts for the db (default)\n    vendor/bin/stoic-migrate -down // Migrates the configuration and runs the `down` scripts for the db");
+	const SCRIPT_NAME        = 'Stoic Framework Migration Utility';
+	const SCRIPT_DESCRIPTION = 'Script that attempts to apply any available configuration\nand database migration files';
+	const SCRIPT_USAGE       = "    vendor/bin/stoic-migrate -up // Migrates the configuration and runs the `up` scripts for the db (default)\n    vendor/bin/stoic-migrate -down // Migrates the configuration and runs the `down` scripts for the db";
 
 	// Migration constants
 	class MStrings {
-		const MigFile = 'MIGRATIONS_TABLE';
-		const FindMigTable = 'find-migrations-table';
-		const InstallMigTable = 'install-migrations-table';
-		const SearchMigrations = 'search-migrations';
-		const InsertMigration = 'insert-migration';
-		const DropMigTable = 'drop-migrations-table';
+		const string MigFile          = 'MIGRATIONS_TABLE';
+		const string FindMigTable     = 'find-migrations-table';
+		const string InstallMigTable  = 'install-migrations-table';
+		const string SearchMigrations = 'search-migrations';
+		const string InsertMigration  = 'insert-migration';
+		const string DropMigTable     = 'drop-migrations-table';
 	}
 
 	$supportedDrivers = [
-		PdoDrivers::PDO_MSSQL => true,
-		PdoDrivers::PDO_MYSQL => true,
-		PdoDrivers::PDO_PGSQL => true,
+		PdoDrivers::PDO_MSSQL  => true,
+		PdoDrivers::PDO_MYSQL  => true,
+		PdoDrivers::PDO_PGSQL  => true,
 		PdoDrivers::PDO_SQLITE => true,
 		PdoDrivers::PDO_SQLSRV => true
 	];
@@ -127,7 +127,7 @@
 	$ch->putLine();
 	$ch->put("Performing configuration migration.. ");
 
-	$cfgHelper = new Migrator($fh->pathJoin($settings->get(SettingsStrings::ASSETS_PATH), $settings->get(SettingsStrings::MIGRATE_CFG_PATH)));
+	$cfgHelper = new Migrator($fh->pathJoin($settings->get(SettingsStrings::MIGRATE_CFG_PATH)));
 	$cfgHelper->migrate();
 
 	$ch->putLine("DONE");
@@ -139,12 +139,12 @@
 		die(1);
 	}
 
-	$filePath = null;
+	$filePath   = null;
 	$isDropping = false;
-	$user = $settings->get(SettingsStrings::DB_USER, null);
-	$pass = $settings->get(SettingsStrings::DB_PASS, null);
-	$dsn = $settings->get(SettingsStrings::DB_DSN);
-	$db = new PdoHelper($settings->get(SettingsStrings::DB_DSN), (empty($user) || $user == '<changeme>') ? null : $user, (empty($pass) || $pass == '<changeme>') ? null : $pass);
+	$user       = $settings->get(SettingsStrings::DB_USER, null);
+	$pass       = $settings->get(SettingsStrings::DB_PASS, null);
+	$dsn        = $settings->get(SettingsStrings::DB_DSN);
+	$db         = new PdoHelper($settings->get(SettingsStrings::DB_DSN), (empty($user) || $user == '<changeme>') ? null : $user, (empty($pass) || $pass == '<changeme>') ? null : $pass);
 
 	if (!$db->isActive() || array_key_exists($db->getDriver()->getValue(), $supportedDrivers) === false) {
 		fwrite(STDERR, "Database migration only supports MSSQL, MySQL, PgSQL, SQLite, and SQL Server" . PHP_EOL);
@@ -154,9 +154,9 @@
 
 	if ($ch->hasShortLongArg('d', 'drop', true)) {
 		$isDropping = true;
-		$filePath = $fh->pathJoin($settings->get(SettingsStrings::ASSETS_PATH), $settings->get(SettingsStrings::MIGRATE_DB_PATH), 'drop');
+		$filePath = $fh->pathJoin($settings->get(SettingsStrings::MIGRATE_DB_PATH), 'drop');
 	} else {
-		$filePath = $fh->pathJoin($settings->get(SettingsStrings::ASSETS_PATH), $settings->get(SettingsStrings::MIGRATE_DB_PATH), 'up');
+		$filePath = $fh->pathJoin( $settings->get(SettingsStrings::MIGRATE_DB_PATH), 'up');
 	}
 
 	$files = [];
@@ -173,7 +173,7 @@
 
 	$ch->put("Gathering SQL migration files.. ");
 
-	foreach (array_values($tFiles) as $f) {
+	foreach ($tFiles as $f) {
 		if (strtolower(substr($f, -4)) == '.sql') {
 			$files[] = $f;
 		}
@@ -181,7 +181,7 @@
 
 	if ($isDropping) {
 		rsort($files);
-		array_push($files, MStrings::MigFile);
+		$files[] = MStrings::MigFile;
 	} else {
 		sort($files);
 		array_unshift($files, MStrings::MigFile);
@@ -210,7 +210,7 @@
 	if (count($files) < 2) {
 		$ch->putLine("No migration files to run against database");
 	} else {
-		foreach (array_values($files) as $f) {
+		foreach ($files as $f) {
 			$fileName = $f;
 
 			if (stripos($fileName, '/') !== false) {
@@ -227,10 +227,11 @@
 
 			if ($f == MStrings::MigFile) {
 				try {
-					$db->queryStored(($isDropping) ? MStrings::DropMigTable : MStrings::InstallMigTable);
-
 					if (!$isDropping) {
+						$db->queryStored(MStrings::InstallMigTable);
 						$db->prepareStored(MStrings::InsertMigration, [':fileName' => MStrings::MigFile])->execute();
+					} else {
+						$db->queryStored(MStrings::DropMigTable);
 					}
 				} catch (\PDOException $ex) {
 					$ch->putLine("ERROR ([{$ex->getCode()}] {$ex->getMessage()})");
@@ -247,11 +248,10 @@
 				if (!empty($sql)) {
 					try {
 						$db->query($sql);
-
 						$db->prepareStored(MStrings::InsertMigration, [':fileName' => $fileName])->execute();
 
 						if (count($db->getErrors()) > 0) {
-							foreach (array_values($db->getErrors()) as $err) {
+							foreach ($db->getErrors() as $err) {
 								$ch->putLine(json_encode($err));
 							}
 						}
