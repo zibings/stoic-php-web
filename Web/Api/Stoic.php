@@ -87,7 +87,7 @@
 			$this->setHeader('Access-Control-Allow-Origin', '*');
 
 			if ($server->has(ServerIndices::REQUEST_METHOD) && $server->getString(ServerIndices::REQUEST_METHOD, '') == 'OPTIONS' && $server->has('HTTP_ACCESS_CONTROL_REQUEST_METHOD')) {
-				header('HTTP/1.1 200 OK');
+				$this->setRawHeader('HTTP/1.1 200 OK');
 				$this->setHeader('Access-Control-Allow-Headers', 'Accept, Authorization, Content-Type, X-CSRF-Token, App-Token, Token');
 				$this->setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
 
@@ -256,7 +256,7 @@
 			if (!function_exists('http_response_code')) {
 				$this->setHeader('X-PHP-Response-Code', $code, true, $code);
 			} else {
-				http_response_code($code);
+				@http_response_code($code);
 			}
 
 			return;
