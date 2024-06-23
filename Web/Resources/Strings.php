@@ -77,7 +77,6 @@
 	 * @version 1.1.0
 	 */
 	class SettingsStrings {
-		const ASSETS_PATH       = 'assetsPath';
 		const CLASSES_EXTENSION = 'classesExt';
 		const CLASSES_PATH      = 'classesPath';
 		const DB_DSN            = 'dbDsn';

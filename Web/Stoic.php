@@ -335,7 +335,7 @@
 		 * @codeCoverageIgnore
 		 * @param string $name String value of header name.
 		 * @param string $value String value of header value.
-		 * @param boolean $replace Optional toggle to replace vs duplicate a header, default behavior is to replace.
+		 * @param bool $replace Optional toggle to replace vs duplicate a header, default behavior is to replace.
 		 * @param null|integer $code Optional HTTP response code to set as response value.
 		 * @return void
 		 */
@@ -348,12 +348,34 @@
 
 			$this->log->info("Attempting to set the `{$name}` header with value `{$value}`");
 
-			// @codeCoverageIgnoreStart
 			if ($code !== null) {
 				header("{$name}: {$value}", $replace, $code);
 			} else {
 				header("{$name}: {$value}", $replace);
 			}
+
+			return;
+		}
+
+		/**
+		 * Attempts to set a raw header string for the current request.  If any output has occurred prior to this attempt,
+		 * the method will log the attempt and silently fail.
+		 *
+		 * @codeCoverageIgnore
+		 * @param string $value String value of header to set.
+		 * @return void
+		 */
+		public function setRawHeader(string $value) : void {
+			if (headers_sent()) {
+				$this->log->warning("Attempted to send the raw header `{$value}` after headers were already sent");
+
+				return;
+			}
+
+			$this->log->info("Attempting to set the raw header `{$value}`");
+
+			// @codeCoverageIgnoreStart
+			header($value);
 			// @codeCoverageIgnoreEnd
 
 			return;
