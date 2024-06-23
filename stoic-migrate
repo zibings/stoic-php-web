@@ -210,6 +210,8 @@
 	if (count($files) < 2) {
 		$ch->putLine("No migration files to run against database");
 	} else {
+		$jsonErrors = [];
+
 		foreach ($files as $f) {
 			$fileName = $f;
 
@@ -252,7 +254,7 @@
 
 						if (count($db->getErrors()) > 0) {
 							foreach ($db->getErrors() as $err) {
-								$ch->putLine(json_encode($err));
+								$jsonErrors[] = json_encode($err);
 							}
 						}
 					} catch (\PDOException $ex) {
@@ -268,6 +270,18 @@
 			}
 
 			$ch->putLine("DONE");
+		}
+
+		if (count($jsonErrors) > 0) {
+			$ch->putLine();
+			$ch->putLine("Errors encountered during migration:");
+			$ch->putLine();
+
+			foreach ($jsonErrors as $err) {
+				$ch->putLine($err);
+			}
+
+			$ch->putLine();
 		}
 	}
 
