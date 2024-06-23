@@ -215,8 +215,13 @@ EOF;
 
 EOF;
 
-		$fh->putContents('~/web/index.php', $baseIndex);
-		$fh->putContents('~/tpl/index/index.tpl.php', $indexTpl);
+		if (!$fh->fileExists('~/web/index.php')) {
+			$fh->putContents('~/web/index.php', $baseIndex);
+		}
+
+		if (!$fh->fileExists('~/tpl/index/index.tpl.php')) {
+			$fh->putContents('~/tpl/index/index.tpl.php', $indexTpl);
+		}
 
 		fwrite(STDOUT, "Site created." . PHP_EOL);
 	} else {
