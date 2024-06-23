@@ -2,7 +2,7 @@
 <?php
 
 	if (version_compare('7.2.0', PHP_VERSION, '>')) {
-		fwrite(STDERR, sprintf("Stoic is only supported on versions of PHP 7.2 or newer." . PHP_EOL . "You are using PHP %s (%s)" . PHP_EOL, PHP_VERSION, PHP_BINARY));
+		fwrite(STDERR, sprintf("Stoic is only supported on versions of PHP 8.3 or newer." . PHP_EOL . "You are using PHP %s (%s)" . PHP_EOL, PHP_VERSION, PHP_BINARY));
 
 		die(1);
 	}
@@ -32,11 +32,14 @@
 
 	use AndyM84\Config\ConfigContainer;
 	use AndyM84\Config\FieldTypes;
+
+	use Stoic\Utilities\ConsoleHelper;
 	use Stoic\Utilities\FileHelper;
 	use Stoic\Web\Resources\SettingsStrings;
 
 	$settings = new ConfigContainer();
-	$fh = new FileHelper(STOIC_COMPOSER_PARENT);
+	$ch       = new ConsoleHelper($argv);
+	$fh       = new FileHelper(STOIC_COMPOSER_PARENT);
 
 	if ($fh->fileExists(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH)) {
 		$settings = new ConfigContainer($fh->getContents(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH));
@@ -44,21 +47,20 @@
 		$cfgContents = '';
 		$required = [
 			'configVersion'                    => ['int', 1],
-			SettingsStrings::ASSETS_PATH       => ['str', '~/assets'],
 			SettingsStrings::CLASSES_EXTENSION => ['str', '.cls.php'],
 			SettingsStrings::CLASSES_PATH      => ['str', 'classes'],
 			SettingsStrings::DB_DSN            => ['str', 'sqlite::memory:'],
 			SettingsStrings::DB_PASS           => ['str', '<changeme>'],
 			SettingsStrings::DB_USER           => ['str', '<changeme>'],
 			SettingsStrings::INCLUDE_PATH      => ['str', '~/inc'],
-			SettingsStrings::MIGRATE_CFG_PATH  => ['str', 'migrations/cfg'],
-			SettingsStrings::MIGRATE_DB_PATH   => ['str', 'migrations/db'],
+			SettingsStrings::MIGRATE_CFG_PATH  => ['str', '~/migrations/cfg'],
+			SettingsStrings::MIGRATE_DB_PATH   => ['str', '~/migrations/db'],
 			SettingsStrings::REPOS_EXTENSION   => ['str', '.rpo.php'],
 			SettingsStrings::REPOS_PATH        => ['str', 'repositories'],
 			SettingsStrings::UTILITIES_EXT     => ['str', '.utl.php'],
 			SettingsStrings::UTILITIES_PATH    => ['str', 'utilities']
 		];
-	
+
 		foreach ($required as $key => $data) {
 			if (!$settings->has($key)) {
 				$settings->set($key, $data[1], FieldTypes::fromString($data[0])->getValue());
@@ -68,31 +70,130 @@
 				$cfgContents .= "{$key}[{$data[0]}] + {$data[1]}" . PHP_EOL;
 			}
 		}
-		
-		$assetsPath = $settings->get(SettingsStrings::ASSETS_PATH, '~/assets');
-		$fh->makeFolder($fh->pathJoin($assetsPath, $settings->get(SettingsStrings::MIGRATE_CFG_PATH, 'migrations/cfg')), 0777, true);
-		$fh->makeFolder($fh->pathJoin($assetsPath, $settings->get(SettingsStrings::MIGRATE_DB_PATH, 'migrations/db'), 'drop'), 0777, true);
-		$fh->makeFolder($fh->pathJoin($assetsPath, $settings->get(SettingsStrings::MIGRATE_DB_PATH, 'migrations/db'), 'up'), 0777, true);
-	
-		$fh->putContents($fh->pathJoin('~/assets/migrations/cfg', '0-1.cfg'), $cfgContents);
+
+		$fh->makeFolder($fh->pathJoin('~/migrations'), 0777, true);
+		$fh->makeFolder($fh->pathJoin($settings->get(SettingsStrings::MIGRATE_CFG_PATH, '~/migrations/cfg')), 0777, true);
+		$fh->makeFolder($fh->pathJoin($settings->get(SettingsStrings::MIGRATE_DB_PATH, '~/migrations/db'), 'drop'), 0777, true);
+		$fh->makeFolder($fh->pathJoin($settings->get(SettingsStrings::MIGRATE_DB_PATH, '~/migrations/db'), 'up'), 0777, true);
+
+		if (!$fh->fileExists($fh->pathJoin('~/migrations/cfg', '0-1.cfg'))) {
+			$fh->putContents($fh->pathJoin('~/migrations/cfg', '0-1.cfg'), $cfgContents);
+		}
+
 		$fh->putContents(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH, json_encode($settings, JSON_PRETTY_PRINT));
 	}
 
-	$incPath = $settings->get(SettingsStrings::INCLUDE_PATH, '~/inc');
+	$indexTpl = <<<'EOF'
+<!DOCTYPE html>
 
-	$tplPath = $fh->pathJoin('~/tpl', 'index');
-	$clsPath = $fh->pathJoin($incPath, $settings->get(SettingsStrings::CLASSES_PATH, 'classes'));
-	$rpoPath = $fh->pathJoin($incPath, $settings->get(SettingsStrings::REPOS_PATH, 'repositories'));
-	$utlPath = $fh->pathJoin($incPath, $settings->get(SettingsStrings::UTILITIES_PATH, 'utilities'));
+<html>
+	<head>
+		<title><?=$page->getTitle()?></title>
+	</head>
+	<body>
+		<h1>Welcome, to Stoic Framework!</h1>
+	</body>
+</html>
+EOF;
 
-	$fh->makeFolder($tplPath, 0777, true);
-	$fh->makeFolder($incPath, 0777, true);
-	$fh->makeFolder($clsPath, 0777, true);
-	$fh->makeFolder($rpoPath, 0777, true);
-	$fh->makeFolder($utlPath, 0777, true);
-	$fh->makeFolder('~/web',  0777, true);
+	if ($ch->hasShortLongArg('p', 'page')) {
+		$page = $ch->getParameterWithDefault('p', 'page', '');
 
-	$baseIndex = <<<'EOF'
+		if (empty($page)) {
+			fwrite(STDERR, "You must specify a page name." . PHP_EOL);
+
+			die(1);
+		}
+
+		if (str_starts_with($page, '/')) {
+			$page = substr($page, 1);
+		}
+
+		if (str_starts_with($page, 'web/')) {
+			fwrite(STDERR, "Page cannot start with `web/` as that is the automatic starting directory." . PHP_EOL);
+
+			die(1);
+		}
+
+		if (str_ends_with($page, '.php')) {
+			fwrite(STDERR, "Page cannot end with `.php` as that is automatically added." . PHP_EOL);
+
+			die(1);
+		}
+
+		if (!$fh->folderExists('~/web')) {
+			$fh->makeFolder('~/web', 0777, true);
+		}
+
+		if ($fh->fileExists($fh->pathJoin('~/web', "{$page}.php"))) {
+			fwrite(STDERR, "Page already exists." . PHP_EOL);
+
+			die(1);
+		}
+
+		$pageName = $page;
+		$corePath = "../";
+
+		if (str_contains($page, '/')) {
+			$parts = explode('/', $page);
+			$last  = array_pop($parts);
+
+			$folder = $fh->pathJoin('~/web', ...$parts);
+
+			if (!$fh->folderExists($folder)) {
+				$fh->makeFolder($folder, 0777, true);
+			}
+
+			$pageName = $last;
+			$corePath = str_repeat('../', count($parts) + 1);
+		}
+
+		if (!$fh->folderExists($fh->pathJoin('~/tpl', $page))) {
+			$fh->makeFolder($fh->pathJoin('~/tpl', $page), 0777, true);
+		}
+
+		$basePage = <<< EOF
+<?php
+
+	const STOIC_CORE_PATH = '{$corePath}';
+	require(STOIC_CORE_PATH . 'vendor/autoload.php');
+
+	use League\Plates\Engine;
+	use Stoic\Web\PageHelper;
+	use Stoic\Web\Stoic;
+
+	\$stoic = Stoic::getInstance(STOIC_CORE_PATH);
+
+	\$page = PageHelper::getPage('{$page}.php');
+	\$page->setTitle('{$pageName}');
+
+	\$tpl = new Engine(null, 'tpl.php');
+	\$tpl->addFolder('page', STOIC_CORE_PATH . 'tpl/{$page}');
+
+	echo(\$tpl->render('page::{$pageName}', ['page' => \$page]));
+
+EOF;
+
+		$fh->putContents($fh->pathJoin('~/web', "{$page}.php"), $basePage);
+		$fh->putContents($fh->pathJoin('~/tpl', $page, "{$pageName}.tpl.php"), $indexTpl);
+
+		fwrite(STDOUT, "Page created." . PHP_EOL);
+	} else if ($ch->hasArg('site')) {
+		$incPath = $settings->get(SettingsStrings::INCLUDE_PATH, '~/inc');
+
+		$tplPath = $fh->pathJoin('~/tpl', 'index');
+		$clsPath = $fh->pathJoin($incPath, $settings->get(SettingsStrings::CLASSES_PATH, 'classes'));
+		$rpoPath = $fh->pathJoin($incPath, $settings->get(SettingsStrings::REPOS_PATH, 'repositories'));
+		$utlPath = $fh->pathJoin($incPath, $settings->get(SettingsStrings::UTILITIES_PATH, 'utilities'));
+
+		$fh->makeFolder($tplPath, 0777, true);
+		$fh->makeFolder($incPath, 0777, true);
+		$fh->makeFolder($clsPath, 0777, true);
+		$fh->makeFolder($rpoPath, 0777, true);
+		$fh->makeFolder($utlPath, 0777, true);
+		$fh->makeFolder('~/web',  0777, true);
+
+		$baseIndex = <<<'EOF'
 <?php
 
 	const STOIC_CORE_PATH = '../';
@@ -114,24 +215,10 @@
 
 EOF;
 
-	$fh->putContents('~/web/index.php', $baseIndex);
+		$fh->putContents('~/web/index.php', $baseIndex);
+		$fh->putContents('~/tpl/index/index.tpl.php', $indexTpl);
 
-	$indexTpl = <<<'EOF'
-<!DOCTYPE html>
-
-<html>
-	<head>
-		<title><?=$page->getTitle()?></title>
-	</head>
-	<body>
-		<h1>Welcome, to Stoic Framework!</h1>
-	</body>
-</html>
-EOF;
-
-	$fh->putContents('~/tpl/index/index.tpl.php', $indexTpl);
-
-	$emptyIndex = <<<'EOF'
-<?php
-
-EOF;
+		fwrite(STDOUT, "Site created." . PHP_EOL);
+	} else {
+		fwrite(STDERR, "You must specify what you are creating:." . PHP_EOL . PHP_EOL . "Examples:" . PHP_EOL . "    vendor/bin/stoic-create --page index" . PHP_EOL . "    vendor/bin/stoic-create --site" . PHP_EOL);
+	}
