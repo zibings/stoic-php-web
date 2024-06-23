@@ -113,7 +113,7 @@
 	$ch->putLine();
 	$ch->put("Performing configuration migration.. ");
 
-	$cfgHelper = new Migrator($fh->pathJoin('~', $settings->get(SettingsStrings::MIGRATE_CFG_PATH, 'migrations/cfg')));
+	$cfgHelper = new Migrator($fh->pathJoin($settings->get(SettingsStrings::MIGRATE_CFG_PATH, '~/migrations/cfg')));
 	$cfgHelper->migrate();
 
 	$ch->putLine("DONE");
