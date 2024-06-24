@@ -148,7 +148,7 @@
 				return $this->getGet();
 			}
 
-			if (!$this->isJson || !is_array($this->input)) {
+			if (!$this->isJson || $this->input === null || $this->input === '') {
 				return new ParameterHelper([]);
 			}
 
