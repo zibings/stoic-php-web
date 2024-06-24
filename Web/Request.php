@@ -158,6 +158,10 @@
 				throw new NonJsonInputException("Can't get parameterized input for non-json payload");
 			}
 
+			if ($this->input === '') {
+				return new ParameterHelper([]);
+			}
+
 			// @codeCoverageIgnoreStart
 			return new ParameterHelper(json_decode($this->input, true));
 			// @codeCoverageIgnoreEnd
