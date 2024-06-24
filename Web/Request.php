@@ -158,7 +158,7 @@
 				throw new NonJsonInputException("Can't get parameterized input for non-json payload");
 			}
 
-			if ($this->input === '') {
+			if (!is_array($this->input)) {
 				return new ParameterHelper([]);
 			}
 
