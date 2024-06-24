@@ -144,21 +144,11 @@
 		 * @return ParameterHelper
 		 */
 		public function getInput() : ParameterHelper {
-			if (!$this->isValid) {
-				// @codeCoverageIgnoreStart
-				throw new InvalidRequestException("Can't get input on an invalid request");
-				// @codeCoverageIgnoreEnd
-			}
-
 			if ($this->requestType->is(RequestType::GET)) {
 				return $this->getGet();
 			}
 
-			if (!$this->isJson) {
-				throw new NonJsonInputException("Can't get parameterized input for non-json payload");
-			}
-
-			if (!is_array($this->input)) {
+			if (!$this->isJson || !is_array($this->input)) {
 				return new ParameterHelper([]);
 			}
 
