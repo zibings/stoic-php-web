@@ -2,7 +2,6 @@
 
 	namespace Stoic\Web\Api;
 
-	use MongoDB\Driver\Server;
 	use Stoic\Chain\ChainHelper;
 	use Stoic\Chain\NodeBase;
 	use Stoic\Log\Logger;
@@ -85,24 +84,25 @@
 			$server = $req->getServer();
 			$get    = $req->getGet();
 
+			$this->setHeader('Access-Control-Allow-Credentials', 'true');
 			$this->setHeader('Cache-Control', $config->get(SettingsStrings::API_CACHE_CONTROL, 'max-age=500'));
 			$this->setHeader('Content-Type', $config->get(SettingsStrings::API_CONTENT_TYPE, 'application/json'));
 
-			if (!$server->has(ServerIndices::HTTP_ORIGIN)) {
-				$this->setHeader('Access-Control-Allow-Origin', '*');
-			} else {
+			$corsAllowedOrigin = '*';
+
+			if ($server->has(ServerIndices::HTTP_ORIGIN)) {
 				$allowedOrigins = [];
 
 				foreach ($config->get(SettingsStrings::CORS_ORIGINS, []) as $origin) {
 					$allowedOrigins[$origin] = true;
 				}
 
-				if (!$config->has(SettingsStrings::CORS_ORIGINS) || isset($allowedOrigins['*'])) {
-					$this->setHeader('Access-Control-Allow-Origin', $server->getString(ServerIndices::HTTP_ORIGIN, '*'));
-				} else if (isset($allowedOrigins[$server->getString(ServerIndices::HTTP_ORIGIN, '')])) {
-					$this->setHeader('Access-Control-Allow-Origin', $server->getString(ServerIndices::HTTP_ORIGIN, ''));
+				if (isset($allowedOrigins['*']) || isset($allowedOrigins[$server->getString(ServerIndices::HTTP_ORIGIN, '')])) {
+					$corsAllowedOrigin = $server->getString(ServerIndices::HTTP_ORIGIN, '*');
 				}
 			}
+
+			$this->setHeader('Access-Control-Allow-Origin', $corsAllowedOrigin);
 
 			if ($server->has(ServerIndices::REQUEST_METHOD) && $server->getString(ServerIndices::REQUEST_METHOD, '') == 'OPTIONS' && $server->has('HTTP_ACCESS_CONTROL_REQUEST_METHOD')) {
 				$this->setRawHeader('HTTP/1.1 200 OK');
