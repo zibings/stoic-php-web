@@ -1,8 +1,8 @@
 #!/usr/bin/env php
 <?php
 
-	if (version_compare('7.2.0', PHP_VERSION, '>')) {
-		fwrite(STDERR, sprintf("Stoic is only supported on versions of PHP 7.2 or newer." . PHP_EOL . "You are using PHP %s (%s)" . PHP_EOL, PHP_VERSION, PHP_BINARY));
+	if (version_compare('8.3.0', PHP_VERSION, '>')) {
+		fwrite(STDERR, sprintf("Stoic is only supported on versions of PHP 8.3 or newer." . PHP_EOL . "You are using PHP %s (%s)" . PHP_EOL, PHP_VERSION, PHP_BINARY));
 
 		die(1);
 	}
