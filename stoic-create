@@ -46,19 +46,24 @@
 	} else {
 		$cfgContents = '';
 		$required = [
-			'configVersion'                    => ['int', 1],
-			SettingsStrings::CLASSES_EXTENSION => ['str', '.cls.php'],
-			SettingsStrings::CLASSES_PATH      => ['str', 'classes'],
-			SettingsStrings::DB_DSN            => ['str', 'sqlite::memory:'],
-			SettingsStrings::DB_PASS           => ['str', '<changeme>'],
-			SettingsStrings::DB_USER           => ['str', '<changeme>'],
-			SettingsStrings::INCLUDE_PATH      => ['str', '~/inc'],
-			SettingsStrings::MIGRATE_CFG_PATH  => ['str', '~/migrations/cfg'],
-			SettingsStrings::MIGRATE_DB_PATH   => ['str', '~/migrations/db'],
-			SettingsStrings::REPOS_EXTENSION   => ['str', '.rpo.php'],
-			SettingsStrings::REPOS_PATH        => ['str', 'repositories'],
-			SettingsStrings::UTILITIES_EXT     => ['str', '.utl.php'],
-			SettingsStrings::UTILITIES_PATH    => ['str', 'utilities']
+			'configVersion'                    => ['int',   1],
+			SettingsStrings::API_CACHE_CONTROL => ['str',   'max-age=500'],
+			SettingsStrings::API_CONTENT_TYPE  => ['str',   'application/json'],
+			SettingsStrings::CLASSES_EXTENSION => ['str',   '.cls.php'],
+			SettingsStrings::CLASSES_PATH      => ['str',   'classes'],
+			SettingsStrings::CORS_HEADERS      => ['str',   'Accept, Authorization, Content-Type, X-CSRF-Token, App-Token, Token'],
+			SettingsStrings::CORS_METHODS      => ['str',   'GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH'],
+			SettingsStrings::CORS_ORIGINS      => ['str[]', '*'],
+			SettingsStrings::DB_DSN            => ['str',   'sqlite::memory:'],
+			SettingsStrings::DB_PASS           => ['str',   '<changeme>'],
+			SettingsStrings::DB_USER           => ['str',   '<changeme>'],
+			SettingsStrings::INCLUDE_PATH      => ['str',   '~/inc'],
+			SettingsStrings::MIGRATE_CFG_PATH  => ['str',   '~/migrations/cfg'],
+			SettingsStrings::MIGRATE_DB_PATH   => ['str',   '~/migrations/db'],
+			SettingsStrings::REPOS_EXTENSION   => ['str',   '.rpo.php'],
+			SettingsStrings::REPOS_PATH        => ['str',   'repositories'],
+			SettingsStrings::UTILITIES_EXT     => ['str',   '.utl.php'],
+			SettingsStrings::UTILITIES_PATH    => ['str',   'utilities']
 		];
 
 		foreach ($required as $key => $data) {

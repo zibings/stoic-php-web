@@ -2,6 +2,7 @@
 
 	namespace Stoic\Web\Api;
 
+	use MongoDB\Driver\Server;
 	use Stoic\Chain\ChainHelper;
 	use Stoic\Chain\NodeBase;
 	use Stoic\Log\Logger;
@@ -12,6 +13,7 @@
 	use Stoic\Web\Resources\HttpStatusCodes;
 	use Stoic\Web\Resources\PageVariables;
 	use Stoic\Web\Resources\ServerIndices;
+	use Stoic\Web\Resources\SettingsStrings;
 
 	/**
 	 * Specialized version of Stoic singleton-ish class to more strictly coordinate API routing.
@@ -79,17 +81,33 @@
 			}
 
 			$req    = $this->getRequest();
+			$config = $this->getConfig();
 			$server = $req->getServer();
 			$get    = $req->getGet();
 
-			$this->setHeader('Cache-Control', 'max-age=500');
-			$this->setHeader('Content-Type', 'application/json');
-			$this->setHeader('Access-Control-Allow-Origin', '*');
+			$this->setHeader('Cache-Control', $config->get(SettingsStrings::API_CACHE_CONTROL, 'max-age=500'));
+			$this->setHeader('Content-Type', $config->get(SettingsStrings::API_CONTENT_TYPE, 'application/json'));
+
+			if (!$server->has(ServerIndices::HTTP_ORIGIN)) {
+				$this->setHeader('Access-Control-Allow-Origin', '*');
+			} else {
+				$allowedOrigins = [];
+
+				foreach ($config->get(SettingsStrings::CORS_ORIGINS, []) as $origin) {
+					$allowedOrigins[$origin] = true;
+				}
+
+				if (!$config->has(SettingsStrings::CORS_ORIGINS) || isset($allowedOrigins['*'])) {
+					$this->setHeader('Access-Control-Allow-Origin', $server->getString(ServerIndices::HTTP_ORIGIN, '*'));
+				} else if (isset($allowedOrigins[$server->getString(ServerIndices::HTTP_ORIGIN, '')])) {
+					$this->setHeader('Access-Control-Allow-Origin', $server->getString(ServerIndices::HTTP_ORIGIN, ''));
+				}
+			}
 
 			if ($server->has(ServerIndices::REQUEST_METHOD) && $server->getString(ServerIndices::REQUEST_METHOD, '') == 'OPTIONS' && $server->has('HTTP_ACCESS_CONTROL_REQUEST_METHOD')) {
 				$this->setRawHeader('HTTP/1.1 200 OK');
-				$this->setHeader('Access-Control-Allow-Headers', 'Accept, Authorization, Content-Type, X-CSRF-Token, App-Token, Token');
-				$this->setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+				$this->setHeader('Access-Control-Allow-Headers', $config->get(SettingsStrings::CORS_HEADERS, 'Accept, Authorization, Content-Type, X-CSRF-Token, App-Token, Token'));
+				$this->setHeader('Access-Control-Allow-Methods', $config->get(SettingsStrings::CORS_METHODS, 'POST, GET, OPTIONS'));
 
 				exit;
 			}
