@@ -31,6 +31,7 @@
 	require(STOIC_COMPOSER_INSTALL);
 
 	use AndyM84\Config\ConfigContainer;
+	use AndyM84\Config\FieldTypes;
 	use AndyM84\Config\Migrator;
 
 	use Stoic\Utilities\ConsoleHelper;
@@ -39,9 +40,9 @@
 	use Stoic\Web\Resources\StoicStrings;
 
 	// Script constants
-	define('SCRIPT_NAME',        'Stoic Framework Configuration Utility');
-	define('SCRIPT_DESCRIPTION', 'Script that provides ways to interactively (or non-interactively) configure a site\'s siteSettings.json file settings');
-	define('SCRIPT_USAGE',       '    vendor/bin/stoic-configure // Runs script interactively\n    vendor/bin/stoic-configure -PdbUser=test // Changes only the dbUser setting value');
+	const SCRIPT_NAME = 'Stoic Framework Configuration Utility';
+	const SCRIPT_DESCRIPTION = 'Script that provides ways to interactively (or non-interactively) configure a site\'s siteSettings.json file settings';
+	const SCRIPT_USAGE = '    vendor/bin/stoic-configure // Runs script interactively\n    vendor/bin/stoic-configure -PdbUser=test // Changes only the dbUser setting value';
 
 	/**
 	 * Attempts to query a CLI user for a value.
@@ -49,36 +50,154 @@
 	 * @param ConsoleHelper $ch ConsoleHelper instance to use for communicating with user.
 	 * @param string $fieldName Name of the field to ask for value from user.
 	 * @param mixed $defaultValue Default value of field if no or incorrect input received from user.
-	 * @param \AndyM84\Config\FieldTypes $type Type of the field whose value is being requested.
+	 * @param FieldTypes $type Type of the field whose value is being requested.
 	 * @return mixed
 	 */
-	function queryForValue(ConsoleHelper $ch, $fieldName, $defaultValue, \AndyM84\Config\FieldTypes $type) {
+	function queryForValue(ConsoleHelper $ch, string $fieldName, mixed $defaultValue, FieldTypes $type) : mixed {
 		$ret = null;
 		$validationFunc = function ($input) { return true; };
 		$sanitationFunc = function ($input) { return trim($input); };
 
-		switch ($type->getValue()) {
-			case \AndyM84\Config\FieldTypes::INTEGER:
-			case \AndyM84\Config\FieldTypes::FLOAT:
-				$validationFunc = function ($input) { return is_numeric($input); };
+		if ($type->isArrayType()) {
+			switch ($type->getValue()) {
+				case FieldTypes::FLOAT_ARR:
+				case FieldTypes::INTEGER_ARR:
+					$validationFunc = function ($input) {
+						$in = json_decode($input, true);
 
-				break;
-			case \AndyM84\Config\FieldTypes::STRING:
-				$validationFunc = function ($input) { return is_string($input); };
+						if (!is_array($in) && !is_numeric($in)) {
+							return false;
+						}
 
-				break;
-			case \AndyM84\Config\FieldTypes::BOOLEAN:
-				$validationFunc = function ($input) { return strtolower($input) == 'y' || strtolower($input) == 'n'; };
-				$sanitationFunc = function ($input) { return strtolower($input) == 'y' ? true : false; };
+						foreach ($in as $val) {
+							if (!is_numeric($val)) {
+								return false;
+							}
+						}
 
-				break;
+						return true;
+					};
+
+					$typeSanitizer = ($type->is(FieldTypes::FLOAT_ARR)) ? 'floatval' : 'intval';
+
+					$sanitationFunc = function ($input) use ($typeSanitizer) {
+						$in = json_decode($input, true);
+
+						if (!is_array($in)) {
+							return [$typeSanitizer($in)];
+						}
+
+						$ret = [];
+
+						foreach ($in as $val) {
+							$ret[] = $typeSanitizer($val);
+						}
+
+						return $ret;
+					};
+
+					break;
+				case FieldTypes::STRING_ARR:
+					$validationFunc = function ($input) {
+						$in = json_decode($input, true);
+
+						if (!is_array($in)) {
+							if (!is_string($in)) {
+								return false;
+							}
+
+							return true;
+						}
+
+						foreach ($in as $val) {
+							if (!is_string($val)) {
+								return false;
+							}
+						}
+
+						return true;
+					};
+
+					$sanitationFunc = function ($input) {
+						$in = json_decode($input, true);
+
+						if (!is_array($in)) {
+							return [$in];
+						}
+
+						return $in;
+					};
+
+					break;
+				case FieldTypes::BOOLEAN_ARR:
+					$validationFunc = function ($input) {
+						$in = json_decode($input, true);
+
+						if (!is_array($in)) {
+							$inLower = strtolower($in);
+
+							if ($inLower != 'y' && $inLower != 'n') {
+								return false;
+							}
+
+							return true;
+						}
+
+						foreach ($in as $val) {
+							$valLower = strtolower($val);
+
+							if ($valLower != 'y' && $valLower != 'n') {
+								return false;
+							}
+						}
+
+						return true;
+					};
+
+					$sanitationFunc = function ($input) {
+						$in = json_decode($input, true);
+
+						if (!is_array($in)) {
+							return [strtolower($in) == 'y'];
+						}
+
+						$ret = [];
+
+						foreach ($in as $val) {
+							$ret[] = strtolower($val) == 'y';
+						}
+
+						return $ret;
+					};
+
+					break;
+			}
+		} else {
+			switch ($type->getValue()) {
+				case FieldTypes::INTEGER:
+				case FieldTypes::FLOAT:
+					$validationFunc = function ($input) { return is_numeric($input); };
+
+					break;
+				case FieldTypes::STRING:
+					$validationFunc = function ($input) { return is_string($input); };
+
+					break;
+				case FieldTypes::BOOLEAN:
+					$validationFunc = function ($input) { return strtolower($input) == 'y' || strtolower($input) == 'n'; };
+					$sanitationFunc = function ($input) { return strtolower($input) == 'y'; };
+
+					break;
+			}
 		}
 
 		$query = "Value for '{$fieldName}'";
 
-		if ($type->is(\AndyM84\Config\FieldTypes::BOOLEAN)) {
+		if ($type->is(FieldTypes::BOOLEAN)) {
 			$query .= " (Y/n)";
 			$defaultValue = ($defaultValue) ? 'Y' : 'N';
+		} else if ($type->isArrayType()) {
+			$defaultValue = json_encode($defaultValue);
 		}
 
 		$ret = $ch->getQueriedInput($query, $defaultValue, "Invalid value for '{$fieldName}'", 5, $validationFunc, $sanitationFunc);
@@ -104,7 +223,7 @@
 	}
 
 	if (!$fh->fileExists(StoicStrings::SETTINGS_FILE_PATH)) {
-		$fh->putContents(StoicStrings::SETTINGS_FILE_PATH, "");
+		$fh->putContents(StoicStrings::SETTINGS_FILE_PATH, "{}");
 	}
 
 	$settings = new ConfigContainer($fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
@@ -157,7 +276,14 @@
 				continue;
 			}
 
-			$settings->set($prop, $val);
+			$propType = FieldTypes::fromString($cfgSchema[$prop]);
+
+			if ($propType->isArrayType()) {
+				$settings->set($prop, json_decode($val));
+			} else {
+				$settings->set($prop, $val);
+			}
+
 			$ch->putLine("DONE");
 		}
 	} else {
