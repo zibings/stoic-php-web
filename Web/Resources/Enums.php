@@ -16,6 +16,7 @@
 		const GET     = 3;
 		const HEAD    = 4;
 		const OPTIONS = 5;
+		const PATCH   = 8;
 		const POST    = 6;
 		const PUT     = 7;
 	}
