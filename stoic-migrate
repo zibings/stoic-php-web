@@ -154,9 +154,15 @@
 
 	if ($ch->hasShortLongArg('d', 'drop', true) || $ch->hasShortLongArg('d', 'down', true)) {
 		$isDropping = true;
-		$filePath = $fh->pathJoin($settings->get(SettingsStrings::MIGRATE_DB_PATH), 'drop');
+		$downDir    = 'drop';
+
+		if (!$fh->folderExists($fh->pathJoin($settings->get(SettingsStrings::MIGRATE_DB_PATH), $downDir)) && $fh->folderExists($fh->pathJoin($settings->get(SettingsStrings::MIGRATE_DB_PATH), 'down'))) {
+			$downDir = 'down';
+		}
+
+		$filePath = $fh->pathJoin($settings->get(SettingsStrings::MIGRATE_DB_PATH), $downDir);
 	} else {
-		$filePath = $fh->pathJoin( $settings->get(SettingsStrings::MIGRATE_DB_PATH), 'up');
+		$filePath = $fh->pathJoin($settings->get(SettingsStrings::MIGRATE_DB_PATH), 'up');
 	}
 
 	$files = [];
