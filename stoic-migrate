@@ -89,17 +89,17 @@
 	]);
 	PdoHelper::storeQueries(PdoDrivers::PDO_PGSQL, [
 		[MStrings::FindMigTable, "SELECT * FROM information_schema.tables WHERE table_name = 'Migration'", null],
-		[MStrings::InstallMigTable, "CREATE TABLE IF NOT EXISTS Migration (ID SERIAL PRIMARY KEY, FileName VARCHAR(256) NOT NULL)", null],
-		[MStrings::SearchMigrations, "SELECT * FROM Migration", null],
-		[MStrings::InsertMigration, "INSERT INTO Migration (FileName) VALUES (:fileName)", [':fileName' => \PDO::PARAM_STR]],
-		[MStrings::DropMigTable, "DROP TABLE IF EXISTS Migration", null]
+		[MStrings::InstallMigTable, "CREATE TABLE IF NOT EXISTS \"Migration\" (\"ID\" SERIAL PRIMARY KEY, \"FileName\" VARCHAR(256) NOT NULL)", null],
+		[MStrings::SearchMigrations, "SELECT * FROM \"Migration\"", null],
+		[MStrings::InsertMigration, "INSERT INTO \"Migration\" (\"FileName\") VALUES (:fileName)", [':fileName' => \PDO::PARAM_STR]],
+		[MStrings::DropMigTable, "DROP TABLE IF EXISTS \"Migration\"", null]
 	]);
 	PdoHelper::storeQueries(PdoDrivers::PDO_SQLITE, [
 		[MStrings::FindMigTable, "SELECT * FROM sqlite_master WHERE type = 'table' AND name LIKE 'Migration'", null],
-		[MStrings::InstallMigTable, "CREATE TABLE IF NOT EXISTS Migration (ID INTEGER AUTOINCREMENT, FileName VARCHAR(256) NOT NULL)", null],
-		[MStrings::SearchMigrations, "SELECT * FROM Migration", null],
-		[MStrings::InsertMigration, "INSERT INTO Migration (FileName) VALUES (:fileName)", [':fileName' => \PDO::PARAM_STR]],
-		[MStrings::DropMigTable, "DROP TABLE IF EXISTS Migration", null]
+		[MStrings::InstallMigTable, "CREATE TABLE IF NOT EXISTS \"Migration\" (\"ID\" INTEGER AUTOINCREMENT, \"FileName\" VARCHAR(256) NOT NULL)", null],
+		[MStrings::SearchMigrations, "SELECT * FROM \"Migration\"", null],
+		[MStrings::InsertMigration, "INSERT INTO \"Migration\" (\"FileName\") VALUES (:fileName)", [':fileName' => \PDO::PARAM_STR]],
+		[MStrings::DropMigTable, "DROP TABLE IF EXISTS \"Migration\"", null]
 	]);
 
 	$ch = new ConsoleHelper($argv);
