@@ -18,47 +18,12 @@
 	 * @version 1.1.0
 	 */
 	class Stoic {
-		/**
-		 * Local ConfigContainer instance.
-		 *
-		 * @var null|ConfigContainer
-		 */
 		protected null|ConfigContainer $config = null;
-		/**
-		 * Relative filesystem path for application's 'core' folder.
-		 *
-		 * @var null|string
-		 */
 		protected null|string $corePath = null;
-		/**
-		 * Local PdoHelper instance.
-		 *
-		 * @var null|PdoHelper
-		 */
-		protected null|PdoHelper $db = null;
-		/**
-		 * Local FileHelper instance.
-		 *
-		 * @var null|FileHelper
-		 */
+		protected null|DatabaseManager $dbm = null;
 		protected null|FileHelper $fh = null;
-		/**
-		 * Local Logger instance.
-		 *
-		 * @var null|Logger
-		 */
 		protected null|Logger $log = null;
-		/**
-		 * Local instance of current request information.
-		 *
-		 * @var null|Request
-		 */
 		protected null|Request $request = null;
-		/**
-		 * ParameterHelper instance which holds $_SESSION data.
-		 *
-		 * @var null|ParameterHelper
-		 */
 		protected null|ParameterHelper $session = null;
 
 
@@ -143,14 +108,14 @@
 		 * @param PageVariables $variables Collection of 'predefined' variables.
 		 * @param Logger $log Logger instance for use by instance.
 		 * @param mixed $input Optional input data to use instead of reading from `php://input` stream.
-		 * @param boolean $loadFiles Whether to attempt loading auxiliary files while instantiating, defaults to true.
-		 * @throws \Stoic\Web\Resources\InvalidRequestException
+		 * @param bool $loadFiles Whether to attempt loading auxiliary files while instantiating, defaults to true.
+		 * @throws \Stoic\Web\Resources\InvalidRequestException|\ReflectionException
 		 */
 		protected function __construct(string $corePath, PageVariables $variables, Logger $log, mixed $input = null, bool $loadFiles = true) {
-			$this->log = $log;
+			$this->log      = $log;
 			$this->corePath = $corePath;
-			$this->config = new ConfigContainer();
-			$this->request = new Request($variables, $input);
+			$this->config   = new ConfigContainer();
+			$this->request  = new Request($variables, $input);
 
 			$this->setFileHelper(new FileHelper($this->corePath));
 
@@ -160,15 +125,19 @@
 				// @codeCoverageIgnoreEnd
 			}
 
+			$this->dbm = new DatabaseManager($this->config);
+
 			$incPath = $this->config->get(SettingsStrings::INCLUDE_PATH, '~/inc');
 			
 			if ($loadFiles) {
-				$clsExt = $this->config->get(SettingsStrings::CLASSES_EXTENSION, '.cls.php');
+				$clsExt  = $this->config->get(SettingsStrings::CLASSES_EXTENSION, '.cls.php');
 				$clsPath = $this->fh->pathJoin($incPath, $this->config->get(SettingsStrings::CLASSES_PATH,   'classes'));
+
 				$this->loadFilesByExtension($clsPath, $clsExt, true);
 				
-				$rpoExt = $this->config->get(SettingsStrings::REPOS_EXTENSION, '.rpo.php');
+				$rpoExt  = $this->config->get(SettingsStrings::REPOS_EXTENSION, '.rpo.php');
 				$rpoPath = $this->fh->pathJoin($incPath, $this->config->get(SettingsStrings::REPOS_PATH, 'repositories'));
+
 				$this->loadFilesByExtension($rpoPath, $rpoExt, true);
 			}
 
@@ -178,15 +147,27 @@
 				// @codeCoverageIgnoreEnd
 			}, $this->log);
 
-			if (!defined('STOIC_DISABLE_DATABASE') || !STOIC_DISABLE_DATABASE) {
-				$dsn = $this->config->get(SettingsStrings::DB_DSN, 'sqlite::memory:');
-				$user = $this->config->get(SettingsStrings::DB_USER, '');
-				$pass = $this->config->get(SettingsStrings::DB_PASS, '');
+			if (!defined('STOIC_DISABLE_DATABASE') || !STOIC_DISABLE_DATABASE && $this->config !== null) {
+				$settings = $this->config->getSettings();
 
-				$this->setDb(new PdoHelper($dsn, $user, $pass));
+				foreach ($settings as $settingName => $settingValue) {
+					if (str_starts_with($settingName, 'dbDsns.') === false) {
+						continue;
+					}
 
-				if (!defined('STOIC_DISABLE_DB_EXCEPTIONS') || !STOIC_DISABLE_DB_EXCEPTIONS) {
-					$this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+					$keyName = substr($settingName, 7);
+					$user    = $this->config->get("dbUsers.{$keyName}", '');
+					$pass    = $this->config->get("dbPasses.{$keyName}", '');
+
+					$db = new PdoHelper($settingValue, $user, $pass);
+
+					if (!defined('STOIC_DISABLE_DB_EXCEPTIONS') || !STOIC_DISABLE_DB_EXCEPTIONS) {
+						$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+					}
+
+					if ($db->isActive()) {
+						$this->dbm->setDatabase($keyName, $db);
+					}
 				}
 			}
 
@@ -226,12 +207,18 @@
 		}
 
 		/**
-		 * Returns the local PdoHelper instance.
+		 * Attempts to return a local PdoHelper instance.
 		 *
+		 * @param null|string $key Optional key to retrieve a specific database instance.
+		 * @throws \Exception
 		 * @return PdoHelper
 		 */
-		public function getDb() : PdoHelper {
-			return $this->db;
+		public function getDb(null|string $key = null) : PdoHelper {
+			if ($key === null) {
+				return $this->dbm->getDatabase('default');
+			}
+
+			return $this->dbm->getDatabase($key);
 		}
 
 		/**
@@ -302,18 +289,6 @@
 			}
 
 			return $ret;
-		}
-
-		/**
-		 * Used to set the local PdoHelper instance.
-		 *
-		 * @param PdoHelper $db PdoHelper object to use internally.
-		 * @return void
-		 */
-		public function setDb(PdoHelper $db) : void {
-			$this->db = $db;
-
-			return;
 		}
 
 		/**
