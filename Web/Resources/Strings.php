@@ -85,9 +85,12 @@
 		const string CORS_HEADERS      = 'cors.headers';
 		const string CORS_METHODS      = 'cors.methods';
 		const string CORS_ORIGINS      = 'cors.origins';
-		const string DB_DSN            = 'dbDsn';
-		const string DB_PASS           = 'dbPass';
-		const string DB_USER           = 'dbUser';
+		const string DB_DSNS           = 'dbDsns';
+		const string DB_DSN_DEFAULT    = 'dbDsn.default';
+		const string DB_PASSES         = 'dbPasses';
+		const string DB_PASS_DEFAULT   = 'dbPass.default';
+		const string DB_USERS          = 'dbUsers';
+		const string DB_USER_DEFAULT   = 'dbUser.default';
 		const string INCLUDE_PATH      = 'includePath';
 		const string MIGRATE_CFG_PATH  = 'migrateCfg';
 		const string MIGRATE_DB_PATH   = 'migrateDb';
