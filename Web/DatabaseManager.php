@@ -29,8 +29,6 @@
 		 * Attempts to retrieve a PdoHelper instance for the specified key.
 		 *
 		 * @param string $key
-		 * @param ConfigContainer|null $config
-		 * @throws \Exception
 		 * @return PdoHelper
 		 */
 		public function getDatabase(string $key) : PdoHelper {
