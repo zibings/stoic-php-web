@@ -39,11 +39,7 @@
 			self::assertTrue($req->isValid());
 			self::assertEquals('true', $req->getRawInput());
 
-			try {
-				self::assertEquals(true, $req->getInput());
-			} catch (NonJsonInputException $ex) {
-				self::assertEquals("Can't get parameterized input for non-json payload", $ex->getMessage());
-			}
+			self::assertEquals(0, $req->getInput()->count());
 
 			$vars = new PageVariables([], [], [], [], [], [], ['REQUEST_METHOD' => 'POST'], []);
 			$req = new Request($vars);

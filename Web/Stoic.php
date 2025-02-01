@@ -3,6 +3,7 @@
 	namespace Stoic\Web;
 
 	use AndyM84\Config\ConfigContainer;
+
 	use Stoic\Log\Logger;
 	use Stoic\Pdo\PdoHelper;
 	use Stoic\Utilities\FileHelper;
@@ -210,7 +211,6 @@
 		 * Attempts to return a local PdoHelper instance.
 		 *
 		 * @param null|string $key Optional key to retrieve a specific database instance.
-		 * @throws \Exception
 		 * @return PdoHelper
 		 */
 		public function getDb(null|string $key = null) : PdoHelper {
