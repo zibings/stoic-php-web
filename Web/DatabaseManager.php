@@ -14,8 +14,8 @@
 	 */
 	class DatabaseManager {
 		/** @var PdoHelper[] */
-		protected static array $instances             = [];
-		protected static ConfigContainer|null $config = null;
+		protected static array $instances = [];
+		protected static null|ConfigContainer $config = null;
 
 
 		/**
@@ -26,20 +26,26 @@
 		 * @throws \Exception
 		 * @return PdoHelper
 		 */
-		public static function getDatabase(string $key, ConfigContainer|null $config = null) : PdoHelper {
-			if ($config === null && self::$config === null) {
-				throw new \Exception("No configuration provided for database connection");
-			}
+		public static function getDatabase(string $key, null|ConfigContainer $config = null) : PdoHelper {
+			$conf = self::$config;
 
 			if ($config !== null) {
-				self::$config = $config;
+				$conf = $config;
+
+				if (self::$config === null) {
+					self::$config = $config;
+				}
+			}
+
+			if ($conf === null) {
+				throw new \Exception("No configuration provided for database connection");
 			}
 
 			if (!array_key_exists($key, self::$instances)) {
 				self::$instances[$key] = new PdoHelper(
-					self::$config->get(SettingsStrings::DB_DSN_DEFAULT, ''),
-					self::$config->get(SettingsStrings::DB_USER_DEFAULT, ''),
-					self::$config->get(SettingsStrings::DB_PASS_DEFAULT, '')
+					$conf->get(SettingsStrings::DB_DSN_DEFAULT, ''),
+					$conf->get(SettingsStrings::DB_USER_DEFAULT, ''),
+					$conf->get(SettingsStrings::DB_PASS_DEFAULT, '')
 				);
 			}
 
