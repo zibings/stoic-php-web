@@ -151,23 +151,38 @@
 			if (!defined('STOIC_DISABLE_DATABASE') || !STOIC_DISABLE_DATABASE && $this->config !== null) {
 				$settings = $this->config->getSettings();
 
-				foreach ($settings as $settingName => $settingValue) {
-					if (str_starts_with($settingName, 'dbDsns.') === false) {
-						continue;
-					}
+				if (array_key_exists('dbDsn', $settings)) {
+					$user = $this->config->get('dbUser', '');
+					$pass = $this->config->get('dbPass', '');
 
-					$keyName = substr($settingName, 7);
-					$user    = $this->config->get("dbUsers.{$keyName}", '');
-					$pass    = $this->config->get("dbPasses.{$keyName}", '');
-
-					$db = new PdoHelper($settingValue, $user, $pass);
+					$db = new PdoHelper($this->config->get('dbDsn'), $user, $pass);
 
 					if (!defined('STOIC_DISABLE_DB_EXCEPTIONS') || !STOIC_DISABLE_DB_EXCEPTIONS) {
 						$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 					}
 
 					if ($db->isActive()) {
-						$this->dbm->setDatabase($keyName, $db);
+						$this->dbm->setDatabase('default', $db);
+					}
+				} else {
+					foreach ($settings as $settingName => $settingValue) {
+						if (str_starts_with($settingName, 'dbDsns.') === false) {
+							continue;
+						}
+
+						$keyName = substr($settingName, 7);
+						$user    = $this->config->get("dbUsers.{$keyName}", '');
+						$pass    = $this->config->get("dbPasses.{$keyName}", '');
+
+						$db = new PdoHelper($settingValue, $user, $pass);
+
+						if (!defined('STOIC_DISABLE_DB_EXCEPTIONS') || !STOIC_DISABLE_DB_EXCEPTIONS) {
+							$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+						}
+
+						if ($db->isActive()) {
+							$this->dbm->setDatabase($keyName, $db);
+						}
 					}
 				}
 			}
