@@ -37,11 +37,14 @@
 			$stoic1 = Stoic::getInstance('./', $pv, new Logger());
 			$stoic1->setSession(new ParameterHelper());
 
-			self::assertInstanceOf(PdoHelper::class, $stoic1->getDb());
 			self::assertInstanceOf(FileHelper::class, $stoic1->getFileHelper());
 			self::assertInstanceOf(ParameterHelper::class, $stoic1->getSession());
 			self::assertInstanceOf(Logger::class, $stoic1->getLog());
 			self::assertInstanceOf(ConfigContainer::class, $stoic1->getConfig());
+
+			self::assertInstanceOf(PdoHelper::class, $stoic1->getDb());
+			self::assertFalse($stoic1->getDb()->isActive());
+			self::assertFalse($stoic1->getDb('test')->isActive());
 
 			return;
 		}
