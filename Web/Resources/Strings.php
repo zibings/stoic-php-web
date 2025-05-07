@@ -10,6 +10,8 @@
 	 */
 	class ServerIndices {
 		const string AUTH_TYPE            = 'AUTH_TYPE';
+		const string CONTENT_LENGTH       = 'CONTENT_LENGTH';
+		const string CONTENT_TYPE         = 'CONTENT_TYPE';
 		const string DOCUMENT_ROOT        = 'DOCUMENT_ROOT';
 		const string GATEWAY_INTERFACE    = 'GATEWAY_INTERFACE';
 		const string HTTP_ACCEPT          = 'HTTP_ACCEPT';

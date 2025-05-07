@@ -16,36 +16,13 @@
 	 * @version 1.1.0
 	 */
 	class Request {
-		/**
-		 * Any available input data for the request. Can be JSON payload or from request variables.
-		 *
-		 * @var mixed
-		 */
+		protected null|string $contentType = null;
+		protected bool $hasFileUploads = false;
 		protected mixed $input = null;
-		/**
-		 * Whether the request is deemed valid.
-		 *
-		 * @var bool
-		 */
 		protected bool $isValid = false;
-		/**
-		 * Whether the request has a JSON payload.
-		 *
-		 * @var bool
-		 */
 		protected bool $isJson = false;
-		/**
-		 * Enumerated value representing the request verb.
-		 *
-		 * @var null|RequestType
-		 */
-		protected ?RequestType $requestType = null;
-		/**
-		 * Local instance of 'predefined' global variables.
-		 *
-		 * @var null|PageVariables
-		 */
-		protected ?PageVariables $variables = null;
+		protected null|RequestType $requestType = null;
+		protected null|PageVariables $variables = null;
 
 
 		/**
@@ -56,26 +33,31 @@
 		 * @param mixed $input Optional input data to use instead of reading from `php://input` stream.
 		 * @throws InvalidRequestException|\ReflectionException
 		 */
-		public function __construct(?PageVariables $variables = null, mixed $input = null) {
+		public function __construct(null|PageVariables $variables = null, mixed $input = null) {
+			$server            = $this->getServer();
 			$this->requestType = new RequestType(RequestType::ERROR);
-			$this->variables = $variables ?? PageVariables::fromGlobals();
-
-			$server = $this->getServer();
+			$this->variables   = $variables ?? PageVariables::fromGlobals();
 
 			if (!$server->has(ServerIndices::REQUEST_METHOD)) {
 				throw new InvalidRequestException("Server collection was missing '" . ServerIndices::REQUEST_METHOD . "' value");
 			}
 
-			$reqMeth = strtoupper($server->getString(ServerIndices::REQUEST_METHOD));
+			$reqMeth           = strtoupper($server->getString(ServerIndices::REQUEST_METHOD));
 			$this->requestType = RequestType::fromString($reqMeth);
 
 			if ($this->requestType->getValue() === null) {
 				throw new InvalidRequestException("Invalid request method provided: {$reqMeth}");
 			}
 
+			if ($server->has(ServerIndices::CONTENT_TYPE)) {
+				$this->contentType = $server->getString(ServerIndices::CONTENT_TYPE, '');
+			}
+
 			if (!$this->requestType->is(RequestType::GET)) {
 				if ($input !== null) {
 					$this->input = $input;
+				} else if ($this->hasFileUploads) {
+					$this->input = $this->variables->post;
 				} else {
 					if ($this->input === null) {
 						$this->readInput();
@@ -86,9 +68,7 @@
 					}
 
 					// @codeCoverageIgnoreStart
-					json_decode(trim($this->input), true);
-
-					if (json_last_error() == JSON_ERROR_NONE) {
+					if (json_validate(trim($this->input))) {
 						$this->isJson = true;
 					}
 					// @codeCoverageIgnoreEnd
@@ -225,6 +205,15 @@
 		 */
 		public function getVariables() : PageVariables {
 			return clone $this->variables;
+		}
+
+		/**
+		 * Indicates whether the request includes file uploads.
+		 *
+		 * @return bool
+		 */
+		public function hasFileUploads() : bool {
+			return $this->hasFileUploads;
 		}
 
 		/**
