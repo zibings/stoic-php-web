@@ -44,6 +44,10 @@
 			return;
 		}
 
+		public function count() : int {
+			return count($this->files);
+		}
+
 		/**
 		 * Returns any available uploaded files with the given key.
 		 *

@@ -13,7 +13,7 @@
 	 * Class to represent a single API request and provide meta information about the request to handler callbacks.
 	 *
 	 * @package Stoic\Web
-	 * @version 1.1.0
+	 * @version 1.3.12
 	 */
 	class Request {
 		protected null|string $contentType = null;
@@ -34,9 +34,9 @@
 		 * @throws InvalidRequestException|\ReflectionException
 		 */
 		public function __construct(null|PageVariables $variables = null, mixed $input = null) {
-			$server            = $this->getServer();
 			$this->requestType = new RequestType(RequestType::ERROR);
 			$this->variables   = $variables ?? PageVariables::fromGlobals();
+			$server            = $this->getServer();
 
 			if (!$server->has(ServerIndices::REQUEST_METHOD)) {
 				throw new InvalidRequestException("Server collection was missing '" . ServerIndices::REQUEST_METHOD . "' value");
@@ -53,31 +53,41 @@
 				$this->contentType = $server->getString(ServerIndices::CONTENT_TYPE, '');
 			}
 
-			if (!$this->requestType->is(RequestType::GET)) {
-				if ($input !== null) {
-					$this->input = $input;
-				} else if ($this->hasFileUploads) {
-					$this->input = $this->variables->post;
-				} else {
-					if ($this->input === null) {
-						$this->readInput();
-					}
+			if ($this->getFiles()->count() > 0) {
+				$this->hasFileUploads = true;
+			}
 
-					if (empty($this->input)) {
+			if (!$this->requestType->is(RequestType::GET)) {
+				if ($this->hasFileUploads) {
+					$this->input = $this->variables->post;
+				} else if ($input !== null) {
+					$this->input = $input;
+				} else {
+					$this->readInput();
+
+					if (empty($this->input) && !empty($this->variables->post)) {
+						$this->input = $this->variables->post;
+					} else if (empty($this->input)) {
 						return;
 					}
+				}
 
-					// @codeCoverageIgnoreStart
+				// @codeCoverageIgnoreStart
+				if (!$this->hasFileUploads && is_string($this->input)) {
 					if (json_validate(trim($this->input))) {
 						$this->isJson = true;
 					}
-					// @codeCoverageIgnoreEnd
 				}
+				// @codeCoverageIgnoreEnd
 			}
 
 			$this->isValid = true;
 
 			return;
+		}
+
+		public function getContentType() : string {
+			return $this->contentType ?? '';
 		}
 
 		/**
@@ -128,13 +138,17 @@
 				return $this->getGet();
 			}
 
-			if (!$this->isJson || $this->input === null || $this->input === '') {
-				return new ParameterHelper([]);
+			if ($this->hasFileUploads || (is_array($this->input) && !$this->isJson)) {
+				return new ParameterHelper(is_array($this->input) ? $this->input : []);
 			}
 
-			// @codeCoverageIgnoreStart
-			return new ParameterHelper(json_decode($this->input, true));
-			// @codeCoverageIgnoreEnd
+			if ($this->isJson && is_string($this->input)) {
+				// @codeCoverageIgnoreStart
+				return new ParameterHelper(json_decode($this->input, true));
+				// @codeCoverageIgnoreEnd
+			}
+
+			return new ParameterHelper([]);
 		}
 
 		/**
@@ -234,7 +248,7 @@
 		protected function readInput() : void {
 			if ($this->input === null) {
 				try {
-					if (($this->input = @file_get_contents("php://input")) === false) {
+					if (($this->input = file_get_contents("php://input")) === false) {
 						$this->input = '';
 					}
 				} catch (\Exception $ex) {
