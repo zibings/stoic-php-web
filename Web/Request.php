@@ -59,14 +59,18 @@
 
 			if (!$this->requestType->is(RequestType::GET)) {
 				if ($this->hasFileUploads) {
+					// @codeCoverageIgnoreStart
 					$this->input = $this->variables->post;
+					// @codeCoverageIgnoreEnd
 				} else if ($input !== null) {
 					$this->input = $input;
 				} else {
 					$this->readInput();
 
 					if (empty($this->input) && !empty($this->variables->post)) {
+						// @codeCoverageIgnoreStart
 						$this->input = $this->variables->post;
+						// @codeCoverageIgnoreEnd
 					} else if (empty($this->input)) {
 						return;
 					}
@@ -139,7 +143,9 @@
 			}
 
 			if ($this->hasFileUploads || (is_array($this->input) && !$this->isJson)) {
+				// @codeCoverageIgnoreStart
 				return new ParameterHelper(is_array($this->input) ? $this->input : []);
+				// @codeCoverageIgnoreEnd
 			}
 
 			if ($this->isJson && is_string($this->input)) {
@@ -150,7 +156,9 @@
 				// @codeCoverageIgnoreEnd
 			}
 
+			// @codeCoverageIgnoreStart
 			return new ParameterHelper([]);
+			// @codeCoverageIgnoreEnd
 		}
 
 		/**

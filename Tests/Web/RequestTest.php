@@ -46,6 +46,14 @@
 			self::assertFalse($req->isValid());
 			self::assertTrue($req->getRequestType()->is(RequestType::POST));
 
+			$vars = new PageVariables([], [], [], [], [], [], ['REQUEST_METHOD' => 'POST', 'CONTENT_TYPE' => 'multipart/form-data'], []);
+			$req = new Request($vars, []);
+			self::assertTrue($req->isValid());
+			self::assertEquals([], $req->getRawInput());
+			self::assertFalse($req->hasFileUploads());
+			self::assertEquals('multipart/form-data', $req->getContentType());
+			self::assertEquals(0, $req->getInput()->count());
+
 			return;
 		}
 
