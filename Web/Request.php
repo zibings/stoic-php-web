@@ -90,6 +90,11 @@
 			return;
 		}
 
+		/**
+		 * Retrieves the detected CONTENT_TYPE of the request, if available.  Returns an empty string if not found.
+		 *
+		 * @return string
+		 */
 		public function getContentType() : string {
 			return $this->contentType ?? '';
 		}
