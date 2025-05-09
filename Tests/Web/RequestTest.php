@@ -39,7 +39,7 @@
 			self::assertTrue($req->isValid());
 			self::assertEquals('true', $req->getRawInput());
 
-			self::assertEquals(0, $req->getInput()->count());
+			self::assertEquals(1, $req->getInput()->count());
 
 			$vars = new PageVariables([], [], [], [], [], [], ['REQUEST_METHOD' => 'POST'], []);
 			$req = new Request($vars);

@@ -144,7 +144,9 @@
 
 			if ($this->isJson && is_string($this->input)) {
 				// @codeCoverageIgnoreStart
-				return new ParameterHelper(json_decode($this->input, true));
+				$input = json_decode($this->input, true);
+
+				return new ParameterHelper(is_array($input) ? $input : [$input]);
 				// @codeCoverageIgnoreEnd
 			}
 
