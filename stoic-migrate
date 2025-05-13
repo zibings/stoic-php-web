@@ -133,7 +133,7 @@
 	$ch->putLine("DONE");
 	$ch->putLine();
 
-	if (!$settings->has(SettingsStrings::DB_DSNS)) {
+	if (!$settings->has(SettingsStrings::DB_DSN_DEFAULT)) {
 		fwrite(STDERR, "You cannot migrate a database without it being configured, try running:" . PHP_EOL . PHP_EOL . "    vendor/bin/stoic-configure" . PHP_EOL);
 
 		die(1);
@@ -141,10 +141,10 @@
 
 	$filePath   = null;
 	$isDropping = false;
-	$dsn        = $settings->get(SettingsStrings::DB_DSNS);
-	$user       = $settings->get(SettingsStrings::DB_USERS);
-	$pass       = $settings->get(SettingsStrings::DB_PASSES);
-	$db         = new PdoHelper($settings->get(SettingsStrings::DB_DSNS), (empty($user) || $user == '<changeme>') ? null : $user, (empty($pass) || $pass == '<changeme>') ? null : $pass);
+	$dsn        = $settings->get(SettingsStrings::DB_DSN_DEFAULT);
+	$user       = $settings->get(SettingsStrings::DB_USER_DEFAULT);
+	$pass       = $settings->get(SettingsStrings::DB_PASS_DEFAULT);
+	$db         = new PdoHelper($settings->get(SettingsStrings::DB_DSN_DEFAULT), (empty($user) || $user == '<changeme>') ? null : $user, (empty($pass) || $pass == '<changeme>') ? null : $pass);
 
 	if (!$db->isActive() || array_key_exists($db->getDriver()->getValue(), $supportedDrivers) === false) {
 		fwrite(STDERR, "Database migration only supports MSSQL, MySQL, PgSQL, SQLite, and SQL Server" . PHP_EOL);
