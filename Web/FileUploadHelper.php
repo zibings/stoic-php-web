@@ -44,6 +44,11 @@
 			return;
 		}
 
+		/**
+		 * Returns the number of uploaded files.
+		 *
+		 * @return int
+		 */
 		public function count() : int {
 			return count($this->files);
 		}
