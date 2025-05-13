@@ -76,6 +76,7 @@
 			}
 		}
 
+		$fh->makeFolder($fh->pathJoin('~/logs'), 0777, true);
 		$fh->makeFolder($fh->pathJoin('~/migrations'), 0777, true);
 		$fh->makeFolder($fh->pathJoin($settings->get(SettingsStrings::MIGRATE_CFG_PATH, '~/migrations/cfg')), 0777, true);
 		$fh->makeFolder($fh->pathJoin($settings->get(SettingsStrings::MIGRATE_DB_PATH, '~/migrations/db'), 'drop'), 0777, true);
