@@ -40,9 +40,9 @@
 	use Stoic\Web\Resources\StoicStrings;
 
 	// Script constants
-	const SCRIPT_NAME        = 'Stoic Framework Configuration Utility';
+	const SCRIPT_NAME = 'Stoic Framework Configuration Utility';
 	const SCRIPT_DESCRIPTION = 'Script that provides ways to interactively (or non-interactively) configure a site\'s siteSettings.json file settings';
-	const SCRIPT_USAGE       = "    vendor/bin/stoic-configure // Runs script interactively\n    vendor/bin/stoic-configure -PdbUser=test // Changes only the dbUser setting value";
+	const SCRIPT_USAGE = '    vendor/bin/stoic-configure // Runs script interactively\n    vendor/bin/stoic-configure -PdbUser=test // Changes only the dbUser setting value';
 
 	/**
 	 * Attempts to query a CLI user for a value.
@@ -226,45 +226,27 @@
 		$fh->putContents(StoicStrings::SETTINGS_FILE_PATH, "{}");
 	}
 
-	$settings = new ConfigContainer($fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
+	$settings           = new ConfigContainer($fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
+	$configMigrationDir = $settings->get(SettingsStrings::MIGRATE_CFG_PATH, '~/migrations/cfg');
 
 	$ch->putLine(SCRIPT_NAME);
 	$ch->putLine();
-	$ch->put("Performing configuration migration.. ");
 
-	$cfgHelper = new Migrator($fh->pathJoin($settings->get(SettingsStrings::MIGRATE_CFG_PATH, '~/migrations/cfg')));
-	$cfgHelper->migrate();
-
-	$ch->putLine("DONE");
-	$ch->putLine();
-
-	$settings = new ConfigContainer($fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
-
-	if ($settings->has('dbDsn') && !$settings->has('dbDsns')) {
-		$ch->put("Detected old dbDsn/dbUser/dbPass settings, creating migration file to convert to dbDsns/dbUsers/dbPasses.. ");
-
-		$cfgFile = <<< CONFIG_FILE
-dbDsn > dbDsns.default
-dbPass > dbPasses.default
-dbUser > dbUsers.default
-CONFIG_FILE;
-
-		$version  = intval($settings->get('configVersion', 1));
-		$fileName = $version . '-' . ($version + 1) . '.cfg';
-
-		$fh->putContents($fh->pathJoin($settings->get(SettingsStrings::MIGRATE_CFG_PATH, '~/migrations/cfg'), $fileName), $cfgFile);
+	if ($fh->folderExists($configMigrationDir)) {
+		$ch->put("Performing configuration migration.. ");
 
 		$cfgHelper = new Migrator($fh->pathJoin($settings->get(SettingsStrings::MIGRATE_CFG_PATH, '~/migrations/cfg')));
 		$cfgHelper->migrate();
 
 		$ch->putLine("DONE");
-		$ch->putLine("Some operating systems will require that you re-run the `stoic-configure` command to recognize the changes");
 		$ch->putLine();
 	}
 
+	$settings  = new ConfigContainer($fh->getContents(StoicStrings::SETTINGS_FILE_PATH));
+	$cfgSchema = $settings->getSchema();
+	
 	$propsToSet    = [];
 	$isInteractive = true;
-	$cfgSchema     = $settings->getSchema();
 	$params        = $ch->parameters(true, true);
 
 	foreach ($params as $param => $value) {
