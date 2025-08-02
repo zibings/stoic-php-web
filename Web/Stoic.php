@@ -192,6 +192,8 @@
 				if (session_status() != PHP_SESSION_ACTIVE && session_status() != PHP_SESSION_DISABLED) {
 					session_start();
 				}
+
+				$this->setSession(new ParameterHelper($_SESSION));
 				// @codeCoverageIgnoreEnd
 			}
 
