@@ -90,27 +90,13 @@
 		$fh->putContents(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH, json_encode($settings, JSON_PRETTY_PRINT));
 	}
 
-	$indexTpl = <<<'EOF'
-<!DOCTYPE html>
-
-<html lang="en">
-	<head>
-		<title><?=$page->getTitle()?></title>
-	</head>
-
-	<body>
-		<h1>Welcome, to Stoic Framework!</h1>
-	</body>
-</html>
-EOF;
-
-	if ($ch->hasShortLongArg('p', 'page')) {
+	function createPage(ConsoleHelper $ch, FileHelper $fh) : void {
 		$page = $ch->getParameterWithDefault('p', 'page', '');
 
 		if (empty($page)) {
 			fwrite(STDERR, "You must specify a page name." . PHP_EOL);
 
-			die(1);
+			exit(1);
 		}
 
 		if (str_starts_with($page, '/')) {
@@ -120,13 +106,13 @@ EOF;
 		if (str_starts_with($page, 'web/')) {
 			fwrite(STDERR, "Page cannot start with `web/` as that is the automatic starting directory." . PHP_EOL);
 
-			die(1);
+			exit(1);
 		}
 
 		if (str_ends_with($page, '.php')) {
 			fwrite(STDERR, "Page cannot end with `.php` as that is automatically added." . PHP_EOL);
 
-			die(1);
+			exit(1);
 		}
 
 		if (!$fh->folderExists('~/web')) {
@@ -136,7 +122,7 @@ EOF;
 		if ($fh->fileExists($fh->pathJoin('~/web', "{$page}.php"))) {
 			fwrite(STDERR, "Page already exists." . PHP_EOL);
 
-			die(1);
+			exit(1);
 		}
 
 		$pageName = $page;
@@ -160,32 +146,43 @@ EOF;
 			$fh->makeFolder($fh->pathJoin('~/tpl', $page), 0777, true);
 		}
 
-		$basePage = <<< EOF
-<?php
+		$tplContents  = $fh->getContents('~/Templates/index.tpl.php');
+		$pageContents = $fh->getContents('~/Templates/site-endpoint.php');
 
-	const STOIC_CORE_PATH = '{$corePath}';
-	require(STOIC_CORE_PATH . 'vendor/autoload.php');
+		$pageContents = str_replace(
+			['{$corePath}', '{$page}', '{$pageName}'],
+			[$corePath, $page, $pageName],
+			$pageContents
+		);
 
-	use League\Plates\Engine;
-	use Stoic\Web\PageHelper;
-	use Stoic\Web\Stoic;
-
-	\$stoic = Stoic::getInstance(STOIC_CORE_PATH);
-
-	\$page = PageHelper::getPage('{$page}.php');
-	\$page->setTitle('{$pageName}');
-
-	\$tpl = new Engine(null, 'tpl.php');
-	\$tpl->addFolder('page', STOIC_CORE_PATH . 'tpl/{$page}');
-
-	echo(\$tpl->render('page::{$pageName}', ['page' => \$page]));
-
-EOF;
-
-		$fh->putContents($fh->pathJoin('~/web', "{$page}.php"), $basePage);
-		$fh->putContents($fh->pathJoin('~/tpl', $page, "{$pageName}.tpl.php"), $indexTpl);
+		$fh->putContents($fh->pathJoin('~/web', "{$page}.php"), $pageContents);
+		$fh->putContents($fh->pathJoin('~/tpl', $page, "{$pageName}.tpl.php"), $tplContents);
 
 		fwrite(STDOUT, "Page created." . PHP_EOL);
+
+		return;
+	}
+
+	$createScripts = [
+		[
+			'args' => ['p', 'page'],
+			'desc' => 'Create a new page in the web directory.',
+			'func' => 'createPage'
+		],
+		[
+			'args' => ['s', 'site'],
+			'desc' => 'Create a new site with the default index page and template.',
+			'func' => null
+		],
+		[
+			'args' => ['a', 'api'],
+			'desc' => 'Create a new API endpoint with the default index page and template.',
+			'func' => null
+		]
+	];
+
+	if ($ch->hasShortLongArg('p', 'page')) {
+		$page = $ch->getParameterWithDefault('p', 'page', '');
 	} else if ($ch->hasArg('site')) {
 		$incPath = $settings->get(SettingsStrings::INCLUDE_PATH, '~/inc');
 
