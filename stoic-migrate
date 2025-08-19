@@ -144,7 +144,20 @@
 	$dsn        = $settings->get(SettingsStrings::DB_DSN_DEFAULT);
 	$user       = $settings->get(SettingsStrings::DB_USER_DEFAULT);
 	$pass       = $settings->get(SettingsStrings::DB_PASS_DEFAULT);
-	$db         = new PdoHelper($settings->get(SettingsStrings::DB_DSN_DEFAULT), (empty($user) || $user == '<changeme>') ? null : $user, (empty($pass) || $pass == '<changeme>') ? null : $pass);
+
+	if ($dsn === null && $settings->has('dbDsn')) {
+		$dsn  = $settings->get('dbDsn');
+		$user = $settings->get('dbUser');
+		$pass = $settings->get('dbPass');
+	}
+
+	if (empty($dsn) || $dsn == '<changeme>') {
+		fwrite(STDERR, "You must set the database DSN in your settings file before running this script." . PHP_EOL);
+
+		die(1);
+	}
+
+	$db = new PdoHelper($dsn, (empty($user) || $user == '<changeme>') ? null : $user, (empty($pass) || $pass == '<changeme>') ? null : $pass);
 
 	if (!$db->isActive() || array_key_exists($db->getDriver()->getValue(), $supportedDrivers) === false) {
 		fwrite(STDERR, "Database migration only supports MSSQL, MySQL, PgSQL, SQLite, and SQL Server" . PHP_EOL);
