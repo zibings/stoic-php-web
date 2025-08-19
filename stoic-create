@@ -57,6 +57,7 @@
 			SettingsStrings::DB_DSN_DEFAULT    => ['str',   'sqlite::memory:'],
 			SettingsStrings::DB_PASS_DEFAULT   => ['str',   '<changeme>'],
 			SettingsStrings::DB_USER_DEFAULT   => ['str',   '<changeme>'],
+			SettingsStrings::ENABLE_LOGGING    => ['bool',  false],
 			SettingsStrings::INCLUDE_PATH      => ['str',   '~/inc'],
 			SettingsStrings::MIGRATE_CFG_PATH  => ['str',   '~/migrations/cfg'],
 			SettingsStrings::MIGRATE_DB_PATH   => ['str',   '~/migrations/db'],
@@ -92,10 +93,11 @@
 	$indexTpl = <<<'EOF'
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
 	<head>
 		<title><?=$page->getTitle()?></title>
 	</head>
+
 	<body>
 		<h1>Welcome, to Stoic Framework!</h1>
 	</body>

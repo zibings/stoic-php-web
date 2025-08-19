@@ -93,6 +93,7 @@
 		const string DB_PASS_DEFAULT   = 'dbPasses.default';
 		const string DB_USERS          = 'dbUsers';
 		const string DB_USER_DEFAULT   = 'dbUsers.default';
+		const string ENABLE_LOGGING    = 'enableLogging';
 		const string INCLUDE_PATH      = 'includePath';
 		const string MIGRATE_CFG_PATH  = 'migrateCfg';
 		const string MIGRATE_DB_PATH   = 'migrateDb';
