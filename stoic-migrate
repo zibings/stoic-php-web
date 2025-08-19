@@ -46,7 +46,7 @@
 	// Script constants
 	const SCRIPT_NAME        = 'Stoic Framework Migration Utility';
 	const SCRIPT_DESCRIPTION = 'Script that attempts to apply any available configuration\nand database migration files';
-	const SCRIPT_USAGE       = "    vendor/bin/stoic-migrate -up // Migrates the configuration and runs the `up` scripts for the db (default)\n    vendor/bin/stoic-migrate -down // Migrates the configuration and runs the `down` scripts for the db";
+	const SCRIPT_USAGE       = "    vendor/bin/stoic-migrate -up // Migrates the configuration and runs the `up` scripts for the db (default)\n    vendor/bin/stoic-migrate -down // Migrates the configuration and runs the `down` scripts for the db\n    vendor/bin/stoic-migrate -up -dsn=\"dbDsns.test\" -user=\"dbUsers.test\" -pass=\"dbPasses.test\" // Migrates the configuration and runs the `up` scripts using the specific DSN, user, and password settings keys";
 
 	// Migration constants
 	class MStrings {
@@ -139,11 +139,33 @@
 		die(1);
 	}
 
+	$dsnKey  = $ch->getParameterWithDefault('dsn', 'dsnKey', SettingsStrings::DB_DSN_DEFAULT);
+	$userKey = $ch->getParameterWithDefault('user', 'userKey', SettingsStrings::DB_USER_DEFAULT);
+	$passKey = $ch->getParameterWithDefault('pass', 'passKey', SettingsStrings::DB_PASS_DEFAULT);
+
+	if ($dsnKey !== SettingsStrings::DB_DSN_DEFAULT && !$settings->has($dsnKey)) {
+		fwrite(STDERR, "The DSN key '{$dsnKey}' does not exist in your settings file." . PHP_EOL);
+
+		die(1);
+	}
+
+	if ($userKey !== SettingsStrings::DB_USER_DEFAULT && !$settings->has($userKey)) {
+		fwrite(STDERR, "The user key '{$userKey}' does not exist in your settings file." . PHP_EOL);
+
+		die(1);
+	}
+
+	if ($passKey !== SettingsStrings::DB_PASS_DEFAULT && !$settings->has($passKey)) {
+		fwrite(STDERR, "The password key '{$passKey}' does not exist in your settings file." . PHP_EOL);
+
+		die(1);
+	}
+
 	$filePath   = null;
 	$isDropping = false;
-	$dsn        = $settings->get(SettingsStrings::DB_DSN_DEFAULT);
-	$user       = $settings->get(SettingsStrings::DB_USER_DEFAULT);
-	$pass       = $settings->get(SettingsStrings::DB_PASS_DEFAULT);
+	$dsn        = $settings->get($dsnKey);
+	$user       = $settings->get($userKey);
+	$pass       = $settings->get($passKey);
 
 	if ($dsn === null && $settings->has('dbDsn')) {
 		$dsn  = $settings->get('dbDsn');
