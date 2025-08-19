@@ -30,5 +30,13 @@
 		"stoic-create",
 		"stoic-migrate",
 		"stoic-configure"
-	]
+	],
+	"extra": {
+		"files": [
+			"Templates/api-index.php",
+			"Templates/core.php",
+			"Templates/index.tpl.php",
+			"Templates/site-index.php"
+		]
+	}
 }
