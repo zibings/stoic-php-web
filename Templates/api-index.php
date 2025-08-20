@@ -35,9 +35,9 @@
 	}
 
 	$endpoints         = [];
-	$endpointNamespace = 'Api';
+	$endpointNamespace = '{$namespace}';
 	$endpointExtension = '.api.php';
-	$loadedFiles       = $Api->loadFilesByExtension('~/api', $endpointExtension);
+	$loadedFiles       = $Api->loadFilesByExtension('{$apiFolder}', $endpointExtension);
 
 	foreach ($loadedFiles as $file) {
 		$f           = str_replace($endpointExtension, '', basename($file));

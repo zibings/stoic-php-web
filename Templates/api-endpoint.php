@@ -1,6 +1,6 @@
 <?php
 
-	namespace %NAMESPACE%;
+	namespace {$namespace};
 
 	use Stoic\Log\Logger;
 	use Stoic\Pdo\PdoHelper;
@@ -13,16 +13,19 @@
 
 	global $Api;
 
-	class %CLASS_NAME% extends StoicDbClass {
+	class {$className} extends StoicDbClass {
+		protected null|PageHelper $page = null;
+
+
 		public function __construct(
 			protected Stoic $stoic,
-			protected PdoHelper $db,
-			protected Logger $log      = null,
-			protected PageHelper $page = null
+			PdoHelper $db,
+			Logger $log      = null,
+			PageHelper $page = null
 		) {
 			parent::__construct($db, $log);
 
-			if ($this->page === null) {
+			if ($page === null) {
 				$this->page = PageHelper::getPage('api/index.php');
 			}
 
@@ -36,4 +39,4 @@
 		}
 	}
 
-	$Api->registerEndpoint('GET', '/\/?%CLASS_NAME%\/?/i', 'get');
+	$Api->registerEndpoint('GET', '/\/?{$className}\/?/i', 'get');

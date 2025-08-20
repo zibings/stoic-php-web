@@ -15,4 +15,11 @@
 	$tpl = new Engine(null, 'tpl.php');
 	$tpl->addFolder('page', STOIC_CORE_PATH . 'tpl/{$page}');
 
-	echo($tpl->render('page::{$pageName}', ['page' => $page]));
+	echo(
+		$tpl->render(
+			'page::index',
+			[
+				'page' => $page
+			]
+		)
+	);

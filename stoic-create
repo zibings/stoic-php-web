@@ -30,6 +30,8 @@
 
 	require(STOIC_COMPOSER_INSTALL);
 
+	global $settings;
+
 	use AndyM84\Config\ConfigContainer;
 	use AndyM84\Config\FieldTypes;
 
@@ -40,6 +42,8 @@
 	$settings = new ConfigContainer();
 	$ch       = new ConsoleHelper($argv);
 	$fh       = new FileHelper(STOIC_COMPOSER_PARENT);
+
+	define('STOIC_LIB_PATH', $fh->folderExists('~/vendor/stoic/web') ? '~/vendor/stoic/web/' : '~/');
 
 	if ($fh->fileExists(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH)) {
 		$settings = new ConfigContainer($fh->getContents(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH));
@@ -57,7 +61,7 @@
 			SettingsStrings::DB_DSN_DEFAULT    => ['str',   'sqlite::memory:'],
 			SettingsStrings::DB_PASS_DEFAULT   => ['str',   '<changeme>'],
 			SettingsStrings::DB_USER_DEFAULT   => ['str',   '<changeme>'],
-			SettingsStrings::ENABLE_LOGGING    => ['bool',  false],
+			SettingsStrings::ENABLE_LOGGING    => ['bln',  false],
 			SettingsStrings::INCLUDE_PATH      => ['str',   '~/inc'],
 			SettingsStrings::MIGRATE_CFG_PATH  => ['str',   '~/migrations/cfg'],
 			SettingsStrings::MIGRATE_DB_PATH   => ['str',   '~/migrations/db'],
@@ -90,6 +94,97 @@
 		$fh->putContents(Stoic\Web\Resources\StoicStrings::SETTINGS_FILE_PATH, json_encode($settings, JSON_PRETTY_PRINT));
 	}
 
+	/**
+	 * Create a new API controller in the api directory.
+	 *
+	 * @param ConsoleHelper $ch
+	 * @param FileHelper $fh
+	 * @return void
+	 */
+	function createApi(ConsoleHelper $ch, FileHelper $fh) : void {
+		$page = $ch->getParameterWithDefault('a', 'api', '');
+
+		if (empty($page)) {
+			fwrite(STDERR, "You must specify a controller name." . PHP_EOL);
+
+			exit(1);
+		}
+
+		if (str_starts_with($page, '/')) {
+			$page = substr($page, 1);
+		}
+
+		if (str_starts_with($page, 'api/')) {
+			fwrite(STDERR, "Page cannot start with `api/` as that is the automatic starting directory." . PHP_EOL);
+
+			exit(1);
+		}
+
+		if (str_ends_with($page, '.api.php')) {
+			fwrite(STDERR, "API controller cannot end with `.api.php` as that is automatically added." . PHP_EOL);
+
+			exit(1);
+		}
+
+		$apiFolder = $ch->getParameterWithDefault('f', 'folder', '~/api/1');
+		$namespace = $ch->getParameterWithDefault('n', 'namespace', 'Api_1');
+
+		if (!$fh->folderExists($apiFolder)) {
+			$fh->makeFolder($apiFolder, 0777, true);
+		}
+
+		if ($fh->fileExists($fh->pathJoin($apiFolder, "{$page}.api.php"))) {
+			fwrite(STDERR, "Controller already exists." . PHP_EOL);
+
+			exit(1);
+		}
+
+		$pageName           = $page;
+		$controllerContents = $fh->getContents(STOIC_LIB_PATH . '/Templates/api-endpoint.php');
+		$controllerContents = str_replace(
+			['{$namespace}', '{$className}'],
+			[$namespace, $pageName],
+			$controllerContents
+		);
+
+		$fh->putContents($fh->pathJoin($apiFolder, "{$page}.php"), $controllerContents);
+
+		fwrite(STDOUT, "Controller '$page.api.php' created." . PHP_EOL);
+
+		$webFolder = str_replace('~/api', '~/web/api', $apiFolder);
+
+		if (!$fh->folderExists($webFolder)) {
+			$fh->makeFolder($webFolder, 0777, true);
+
+			$corePath = "../";
+
+			if (str_contains($page, '/')) {
+				$parts    = explode('/', $page);
+				$corePath = str_repeat('../', count($parts) + 1);
+			}
+
+			$webContents = $fh->getContents(STOIC_LIB_PATH . '/Templates/api-index.php');
+			$webContents = str_replace(
+				['{$corePath}', '{$namespace}', '{$apiFolder}'],
+				[$corePath, $namespace, $apiFolder],
+				$webContents
+			);
+
+			$fh->putContents($fh->pathJoin($webFolder, "index.php"), $webContents);
+
+			fwrite(STDOUT, "Web API index page created at '$webFolder/index.php'." . PHP_EOL);
+		}
+
+		return;
+	}
+
+	/**
+	 * Create a new page in the web directory.
+	 *
+	 * @param ConsoleHelper $ch
+	 * @param FileHelper $fh
+	 * @return void
+	 */
 	function createPage(ConsoleHelper $ch, FileHelper $fh) : void {
 		$page = $ch->getParameterWithDefault('p', 'page', '');
 
@@ -146,8 +241,7 @@
 			$fh->makeFolder($fh->pathJoin('~/tpl', $page), 0777, true);
 		}
 
-		$tplContents  = $fh->getContents('~/Templates/index.tpl.php');
-		$pageContents = $fh->getContents('~/Templates/site-endpoint.php');
+		$pageContents = $fh->getContents(STOIC_LIB_PATH . '/Templates/site-endpoint.php');
 
 		$pageContents = str_replace(
 			['{$corePath}', '{$page}', '{$pageName}'],
@@ -156,34 +250,26 @@
 		);
 
 		$fh->putContents($fh->pathJoin('~/web', "{$page}.php"), $pageContents);
-		$fh->putContents($fh->pathJoin('~/tpl', $page, "{$pageName}.tpl.php"), $tplContents);
+		$fh->putContents(
+			$fh->pathJoin('~/tpl', $page, "index.tpl.php"),
+			$fh->getContents(STOIC_LIB_PATH . '/Templates/index.tpl.php')
+		);
 
-		fwrite(STDOUT, "Page created." . PHP_EOL);
+		fwrite(STDOUT, "Page '$page.php' created." . PHP_EOL);
 
 		return;
 	}
 
-	$createScripts = [
-		[
-			'args' => ['p', 'page'],
-			'desc' => 'Create a new page in the web directory.',
-			'func' => 'createPage'
-		],
-		[
-			'args' => ['s', 'site'],
-			'desc' => 'Create a new site with the default index page and template.',
-			'func' => null
-		],
-		[
-			'args' => ['a', 'api'],
-			'desc' => 'Create a new API endpoint with the default index page and template.',
-			'func' => null
-		]
-	];
+	/**
+	 * Create a new site with the default index page, template, and folders.
+	 *
+	 * @param ConsoleHelper $ch
+	 * @param FileHelper $fh
+	 * @return void
+	 */
+	function createSite(ConsoleHelper $ch, FileHelper $fh) : void {
+		global $settings;
 
-	if ($ch->hasShortLongArg('p', 'page')) {
-		$page = $ch->getParameterWithDefault('p', 'page', '');
-	} else if ($ch->hasArg('site')) {
 		$incPath = $settings->get(SettingsStrings::INCLUDE_PATH, '~/inc');
 
 		$tplPath = $fh->pathJoin('~/tpl', 'index');
@@ -198,37 +284,69 @@
 		$fh->makeFolder($utlPath, 0777, true);
 		$fh->makeFolder('~/web',  0777, true);
 
-		$baseIndex = <<<'EOF'
-<?php
-
-	const STOIC_CORE_PATH = '../';
-	require(STOIC_CORE_PATH . 'vendor/autoload.php');
-
-	use League\Plates\Engine;
-	use Stoic\Web\PageHelper;
-	use Stoic\Web\Stoic;
-
-	$stoic = Stoic::getInstance(STOIC_CORE_PATH);
-
-	$page = PageHelper::getPage('index.php');
-	$page->setTitle('Stoic Framework v1');
-
-	$tpl = new Engine(null, 'tpl.php');
-	$tpl->addFolder('page', STOIC_CORE_PATH . 'tpl/index');
-
-	echo($tpl->render('page::index', ['page' => $page]));
-
-EOF;
-
 		if (!$fh->fileExists('~/web/index.php')) {
-			$fh->putContents('~/web/index.php', $baseIndex);
+			createPage(new ConsoleHelper([
+				'stoic-create',
+				'-p', 'index'
+			]), $fh);
 		}
 
-		if (!$fh->fileExists('~/tpl/index/index.tpl.php')) {
-			$fh->putContents('~/tpl/index/index.tpl.php', $indexTpl);
+		if (!$fh->fileExists('~/inc/core.php')) {
+			$fh->putContents('~/inc/core.php', $fh->getContents(STOIC_LIB_PATH . '/Templates/core.php'));
+
+			fwrite(STDOUT, "Core file created at '~/inc/core.php'." . PHP_EOL);
 		}
 
 		fwrite(STDOUT, "Site created." . PHP_EOL);
-	} else {
-		fwrite(STDERR, "You must specify what you are creating:." . PHP_EOL . PHP_EOL . "Examples:" . PHP_EOL . "    vendor/bin/stoic-create --page index" . PHP_EOL . "    vendor/bin/stoic-create --site" . PHP_EOL);
+
+		return;
+	}
+
+	$createScripts = [
+		[
+			'args' => ['p', 'page'],
+			'desc' => 'Create a new page in the web directory.',
+			'func' => 'createPage'
+		],
+		[
+			'args' => ['s', 'site'],
+			'desc' => 'Create a new site with the default index page and template.',
+			'func' => 'createSite'
+		],
+		[
+			'args' => ['a', 'api'],
+			'desc' => 'Create a new API endpoint with the default index page and template.',
+			'func' => 'createApi'
+		],
+		[
+			'args' => ['h', 'help'],
+			'desc' => 'Show this help message.',
+			'func' => function(ConsoleHelper $ch, FileHelper $fh) {
+				fwrite(STDOUT, "Usage: stoic-create [options]" . PHP_EOL . PHP_EOL);
+				fwrite(STDOUT, "Options:" . PHP_EOL);
+				fwrite(STDOUT, "    -p, --page <name>                         Create a new page in the web directory." . PHP_EOL);
+				fwrite(STDOUT, "    -s, --site                                Create a new site with the default index page and template." . PHP_EOL);
+				fwrite(STDOUT, "    -a, --api <name> --namespace <namespace>  Create a new API endpoint with the default index page and template." . PHP_EOL);
+				fwrite(STDOUT, "    -h, --help                                Show this help message." . PHP_EOL);
+				fwrite(STDOUT, PHP_EOL . "Examples:" . PHP_EOL);
+				fwrite(STDOUT, "    vendor/bin/stoic-create --page index" . PHP_EOL);
+				fwrite(STDOUT, "    vendor/bin/stoic-create --site" . PHP_EOL);
+				fwrite(STDOUT, "    vendor/bin/stoic-create --api users --namespace Api --folder " . PHP_EOL);
+				fwrite(STDOUT, PHP_EOL . "For more information, please visit the Stoic Framework documentation at https://stoic-framework.com/" . PHP_EOL);
+
+				exit(0);
+			}
+		]
+	];
+
+	foreach ($createScripts as $script) {
+		if ($ch->hasShortLongArg(...$script['args'])) {
+			if (is_callable($script['func'])) {
+				$script['func']($ch, $fh);
+			} else {
+				fwrite(STDERR, "This script is not yet implemented." . PHP_EOL);
+			}
+
+			exit(0);
+		}
 	}
