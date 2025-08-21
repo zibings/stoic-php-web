@@ -86,7 +86,7 @@
 		 * @param null|ParameterHelper $request Optional ParameterHelper instance containing $_REQUEST collection, defaults to contents of $_REQUEST.
 		 * @return PageHelper
 		 */
-		public static function &getPage(string $pagePath, ParameterHelper $get = null, ParameterHelper $post = null, ParameterHelper $request = null) : PageHelper {
+		public static function &getPage(string $pagePath, null|ParameterHelper $get = null, null|ParameterHelper $post = null, null|ParameterHelper $request = null) : PageHelper {
 			if (array_key_exists($pagePath, static::$pages) === false) {
 				static::$pages[$pagePath] = new PageHelper($pagePath);
 				static::$pages[$pagePath]->get = new ParameterHelper($_GET);
@@ -175,7 +175,7 @@
 		 * @throws \InvalidArgumentException
 		 * @return StringHelper
 		 */
-		public function getAssetPath(string $path, array $queryVars = null, bool $includeDomain = false, int $flags = ENT_COMPAT | ENT_HTML401, string $encoding = 'UTF-8', bool $doubleEncode = false) : StringHelper {
+		public function getAssetPath(string $path, null|array $queryVars = null, bool $includeDomain = false, int $flags = ENT_COMPAT | ENT_HTML401, string $encoding = 'UTF-8', bool $doubleEncode = false) : StringHelper {
 			$path = new StringHelper(trim($path));
 
 			if ($path->isEmptyOrNullOrWhitespace()) {
