@@ -44,15 +44,18 @@
 			self::assertEquals(3, count($pages));
 
 			$pages = $ph->getPages(310);
-			self::assertEquals(77, count($pages));
+			self::assertEquals(78, count($pages));
 
 			$ph = new PaginateHelper(75, 390, 5);
 			$pages = $ph->getPages(75);
-			self::assertEquals(74, count($pages));
+			self::assertEquals(75, count($pages));
 
 			$ph = new PaginateHelper(78, 390, 5);
-			$pages = $ph->getPages(5);
-			self::assertEquals(4, count($pages));
+			$pages = $ph->getPages();
+			self::assertEquals(5, count($pages));
+
+			$ph = new PaginateHelper(1, 3, 1);
+			self::assertEquals(3, count($ph->getPages()));
 
 			return;
 		}

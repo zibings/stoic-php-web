@@ -117,8 +117,8 @@
 		 * @return int[]
 		 */
 		public function getPages(int $numPages = 5) : array {
-			$ret = array();
-			$st = 0;
+			$st  = 0;
+			$ret = [];
 
 			if ($this->currentPage > 0 && $this->totalPages > 0 && $numPages > 0) {
 				if ($this->totalPages < $numPages) {
@@ -138,7 +138,7 @@
 				}
 			}
 
-			for (; $st < $this->totalPages; $st++) {
+			for (; $st <= $this->totalPages; $st++) {
 				if (count($ret) == $numPages) {
 					break;
 				}
