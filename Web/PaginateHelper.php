@@ -135,6 +135,10 @@
 							// @codeCoverageIgnoreEnd
 						}
 					}
+
+					if ($st < 1) {
+						$st = 1;
+					}
 				}
 			}
 
